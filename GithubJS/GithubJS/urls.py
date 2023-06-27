@@ -17,6 +17,6 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path("js/", include("GitJS.urls")),
+    path("", include("GitJS.urls")),
     path("admin/", admin.site.urls),
 ]
