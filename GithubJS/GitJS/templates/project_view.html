@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project view</title>
+</head>
+<body>
+    <h1>{{ project.title }}</h1>
+    {% block proba %}
+    <ul>
+    {% for branch in project.branch_set.all %}
+        <li><a href="{% url 'single_branch' project.id branch.id %}">{{ branch.name }}</a></li>
+    {% endfor %}
+    </ul>
+
+    <br>
+
+    <a href="{% url 'add_branch' project.id %}"><button>Add branch</button></a>
+    {% endblock %}
+</body>
+</html>

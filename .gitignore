@@ -1,0 +1,4 @@
+.idea/
+*.pyc
+pgdata/
+venv/
