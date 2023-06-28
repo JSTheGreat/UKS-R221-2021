@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}"/>
     <title>New branch</title>
 </head>
 <body>
@@ -10,12 +12,12 @@
     <form action="{% url 'add_branch' project.id %}" method="post">
     {% csrf_token %}
     <fieldset>
-        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-        <input type="text" name="new_branch" id="new_branch">
+        {% if error_message %}<p class="error"><strong>{{ error_message }}</strong></p>{% endif %}
         <label for="new_branch">New branch name</label><br>
+        <input type="text" name="new_branch" id="new_branch">
     </fieldset>
         <br>
-    <input type="submit" value="Add">
+    <input type="submit" value="Add" class="add_btn">
     </form>
 </body>
 </html>

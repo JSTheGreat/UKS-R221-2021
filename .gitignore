@@ -1,5 +1,4 @@
 .idea/
 *.pyc
-static/
 pgdata/
 venv/
