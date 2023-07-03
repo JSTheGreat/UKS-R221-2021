@@ -10,10 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from pathlib import Path
+import os
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
@@ -76,8 +76,12 @@ WSGI_APPLICATION = 'GithubJS.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postuksjs',
+        'PASSWORD': 'postuksjs',
+        'HOST': 'db',
+        'PORT': 5432,
     }
 }
 
@@ -119,8 +123,50 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
+# The root folder that provides static files for the deployment.
+# To put all static files here, run the following command:
+# python manage.py collectstatic --noinput
+
+STATIC_ROOT = '../static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# !!! HACK !!!
+# The initial idea was to use sqlite for testing and postgres for "production".
+# To do this, prepend UKS_TEST_DB before linux command.
+# Linux tested... Not guaranteed for others.
+# https://stackoverflow.com/questions/4650509/different-db-for-testing-in-django/4650651#4650651
+use_testdb = os.environ.get('UKS_TEST_DB', '')
+if use_testdb == 'ON':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            # custom name for testing db
+            'TEST': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': os.path.join(BASE_DIR, 'testdb.sqlite3'),
+            }
+        }
+    }
+else:
+    # use redis as a cache in production
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": "redis://redis:6379",
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient"
+            },
+            "KEY_PREFIX": "uks-js"
+        }
+    }
+
+    # Cache time to live is 15 minutes.
+    CACHE_TTL = 60 * 15
+    # store session in cache
+    SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+    SESSION_CACHE_ALIAS = "default"
