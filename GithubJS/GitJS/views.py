@@ -5,9 +5,22 @@ from django.views import generic
 
 from .models import Project, Branch
 
+from django.conf import settings
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
+from django.views.decorators.cache import cache_page
+import redis
+
+CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
+
 
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
+
+
+@cache_page(CACHE_TTL)
+def cached_initial(request):
+    redis.Redis(host='uks_js_redis', port=6379)
+    return render(request, "cache_test.html")
 
 
 class ProjectView(generic.DetailView):
@@ -32,7 +45,8 @@ def add_branch(request, project_id):
         if new_branch_name.strip() == '':
             error_message = "Branch name can't be empty"
             return render(request, "branch_form.html", {"project": project, "error_message": error_message})
-        b = Branch(name=new_branch_name)
+        new_id = len(Branch.objects.all())+1
+        b = Branch(id=new_id, name=new_branch_name)
         b.project = project
         b.save()
         return HttpResponseRedirect(reverse("single_project", args=(project.id,)))
