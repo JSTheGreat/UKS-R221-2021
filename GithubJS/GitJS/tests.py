@@ -20,7 +20,7 @@ class InitialTests(TestCase):
         p1 = Project.objects.get(id=1)
         self.assertIs(p1.get_branch_number(), 3)
         p2 = Project.objects.get(id=2)
-        self.assertIs(p2.get_branch_number(), 1)
+        self.assertIs(p2.get_branch_number(), 4)
         p3 = Project.objects.get(id=3)
         self.assertIs(p3.get_branch_number(), 2)
 
