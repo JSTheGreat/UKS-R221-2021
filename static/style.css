@@ -11,7 +11,12 @@
   margin: 0px;
   float: left;
   width: 30%;
+  height: 100%;
+  border-right: 1px solid black;
+}
 
+.base-link {
+  margin-top: 10%;
 }
 
 .header, .footer{
@@ -22,18 +27,18 @@
 }
 
 .center{
- margin-left: 30%;
- width: 70%;
- height: 80%;
- border-left: solid black 1px;
+ margin-top: 5%;
+ margin-bottom: 5%;
+ overflow: auto;
 }
 
 
 .page{
   text-align: center;
-  margin: auto;
-  min-width: 50%;
-  width: 80%;
+  width: 100%;
+  min-width: 60%;
+  min-height: 60%;
+  height: 90%;
 }
 
 table{

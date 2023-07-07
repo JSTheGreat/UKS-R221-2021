@@ -49,5 +49,12 @@ def add_branch(request, project_id):
         new_id = len(Branch.objects.all())+1
         b = Branch(id=new_id, name=new_branch_name)
         b.project = project
-        b.save()
-        return HttpResponseRedirect(reverse("single_project", args=(project.id,)))
+
+        try:
+            existing_branch = Branch.objects.get(name=new_branch_name, project_id=project.id)
+            error_message = "Branch name already exists"
+            return render(request, "branch_form.html", {"project": project, "error_message": error_message,
+                                                        "title": "Error!"})
+        except:
+            b.save()
+            return HttpResponseRedirect(reverse("single_project", args=(project.id,)))
