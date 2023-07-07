@@ -1,13 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    {% load static %}
-    <meta charset="UTF-8">
-    <title>Cache test</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
     This is cached by redis container
     <br><br><br>
     It is not supposed to be changed a lot (if at all)
-</body>
-</html>
+{% endblock %}
