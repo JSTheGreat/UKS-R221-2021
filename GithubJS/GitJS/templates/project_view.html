@@ -1,10 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Project view</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
     <h1>{{ project.title }}</h1>
     {% block proba %}
     <ul>
@@ -17,5 +12,4 @@
 
     <a href="{% url 'add_branch' project.id %}"><button>Add branch</button></a>
     {% endblock %}
-</body>
-</html>
+{% endblock %}

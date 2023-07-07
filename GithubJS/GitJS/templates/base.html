@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'style.css' %}"/>
+    <title>{{title}}</title>
+</head>
+<body>
+<div class="page">
+      <div class="header">
+          <h1>GITHUB JS HOME</h1>
+      </div>
+      <div class="left">
+          <ul>
+              <li>
+                  <a href="{% url 'index' %}">Home</a>
+              </li>
+              <li>
+                  <a href="{% url 'single_project' 1 %}">First project</a>
+              </li>
+              <li>
+                  <a href="{% url 'single_branch' 1 1 %}">First branch</a>
+              </li>
+              <li>
+                  <a href="{% url 'add_branch' 1 %}">New branch</a>
+              </li>
+              <li>
+                  <a href="{% url 'test_redis_page' %}">Redis test</a>
+              </li>
+          </ul>
+          {% block links %}{% endblock %}
+      </div>
+      <div class="center">
+          {% block content %}{% endblock %}
+      </div>
+      <div class="footer">This is a clone of Github created by Jovan Svorcan R2 21/2021</div>
+</div>
+</body>
+</html>
