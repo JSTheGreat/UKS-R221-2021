@@ -2,11 +2,11 @@ from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
-from django.views import generic
 
-from .models import Project, Branch
+from .models import Project, Branch, GitUser
 
 from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
@@ -71,7 +71,7 @@ def git_login(request):
     if request.user.is_authenticated:
         return redirect('index')
     if request.method == 'GET':
-        return render(request, "login.html", {"title": "Index"})
+        return render(request, "login.html", {"title": "Log In"})
     elif request.method == 'POST':
         username = request.POST['uname']
         password = request.POST['psw']
@@ -80,8 +80,48 @@ def git_login(request):
             login(request, user)
             return redirect('index')
         else:
-            # neuspesno
-            return render(request, "login.html", {"title": "Login greska!", 'greska_login': True})
+            return render(request, "login.html", {"title": "Login error!", 'login_has_error': True})
+    else:
+        raise Http404()
+
+
+def git_register(request):
+    if request.user.is_authenticated:
+        return redirect('index')
+    if request.method == 'GET':
+        return render(request, "register.html", {"title": "Register"})
+    elif request.method == 'POST':
+        username = request.POST['uname']
+        email = request.POST['mail']
+        password = request.POST['psw']
+        repeated = request.POST['psw_repeat']
+        role = request.POST['role']
+
+        error_message = ''
+
+        if username == '' or username is None:
+            error_message = 'Username can\'t remain empty!'
+        if email == '' or email is None:
+            error_message = 'Email can\'t remain empty!'
+        elif password == '' or password is None:
+            error_message = 'Password can\'t remain empty!'
+        elif repeated == '' or repeated is None:
+            error_message = 'Password must be repeated!'
+        elif password != repeated:
+            error_message = 'Passwords don\'t match!'
+        elif role == '' or role is None:
+            error_message = 'You have to pick a role!'
+
+        if error_message:
+            return render(request, "register.html", {"title": "Registration error!", 'error_message': error_message})
+
+        group, _ = Group.objects.get_or_create(name=role)
+        new_user = GitUser.objects.create_user(username, email, password)
+        new_user.groups.add(group)
+        new_user.save()
+
+        login(request, new_user)
+        return redirect('index')
     else:
         raise Http404()
 

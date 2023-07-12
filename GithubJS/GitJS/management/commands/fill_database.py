@@ -23,10 +23,10 @@ class Command(BaseCommand):
             content_type=content_type,
         )
 
-        group1, _ = Group.objects.get_or_create(name="developers")
+        group1, _ = Group.objects.get_or_create(name="Developer")
         group1.permissions.add(permission1)
         group1.permissions.add(permission2)
-        group2, _ = Group.objects.get_or_create(name="viewers")
+        group2, _ = Group.objects.get_or_create(name="Viewer")
         group2.permissions.add(permission1)
 
         GitUser.objects.all().delete()

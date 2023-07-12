@@ -9,5 +9,6 @@ urlpatterns = [
     path("<int:project_id>/add_branch/", views.add_branch, name="add_branch"),
     path("testredis/", views.cached_initial, name="test_redis_page"),
     path('login/', views.git_login, name='git_login'),
-    path('logout/', views.git_logout, name='git_logout')
+    path('logout/', views.git_logout, name='git_logout'),
+    path('register/', views.git_register, name='git_register')
 ]

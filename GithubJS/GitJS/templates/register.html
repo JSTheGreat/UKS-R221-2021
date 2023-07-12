@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style-login.css' %}"/>
+    <title>{{ title }}</title>
+
+</head>
+<body>
+
+<h2>Registration form</h2>
+
+<form action="{% url 'git_register' %}" method="post">
+    {% csrf_token %}
+
+    <div class="container">
+
+        <label for="uname"><b>Username</b></label>
+        <input type="text" placeholder="Enter username..." id="uname" name="uname" required>
+
+        <label for="mail"><b>Email</b></label>
+        <input type="text" placeholder="Enter email..." id="mail" name="mail" required>
+
+        <label for="psw"><b>Password</b></label>
+        <input type="password" placeholder="Enter password..." id="psw" name="psw" required>
+
+        <label for="psw_repeat"><b>Repeat password</b></label>
+        <input type="password" placeholder="Repeat password..." id="psw_repeat" name="psw_repeat" required>
+
+        <label for="role"><b>Your role</b></label>
+        <select id="role" name="role" required>
+            <option>Developer</option>
+            <option>Viewer</option>
+        </select>
+
+        <button type="submit">Register</button>
+        {% if error_message %}
+        <label>
+            <span class="err">{{error_message}}</span>
+        </label>
+        {% endif %}
+    </div>
+
+</form>
+
+</body>
+</html>

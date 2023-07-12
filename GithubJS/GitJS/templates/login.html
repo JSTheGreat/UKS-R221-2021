@@ -17,13 +17,17 @@
 
     <div class="container">
         <label for="uname"><b>Username</b></label>
-        <input type="text" placeholder="Enter username..." name="uname" required>
+        <input type="text" placeholder="Enter username..." id="uname" name="uname" required>
 
         <label for="psw"><b>Password</b></label>
-        <input type="password" placeholder="Enter password..." name="psw" required>
+        <input type="password" placeholder="Enter password..." id="psw" name="psw" required>
+
+        <a href="{% url 'git_register' %}">
+            Don't have an account yet? Register here
+        </a>
 
         <button type="submit">Log In</button>
-        {% if greska_login %}
+        {% if login_has_error %}
         <label>
             <span class="err">Wrong username or password</span>
         </label>
