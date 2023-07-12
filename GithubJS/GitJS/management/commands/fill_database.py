@@ -11,19 +11,23 @@ class Command(BaseCommand):
 
     def _add_users(self):
         content_type = ContentType.objects.get_for_model(Project)
-        # get_or_create koristimo za slucaj da postoji
-        permission, _ = Permission.objects.get_or_create(
-            codename='can_use',
-            name='Can use',
+        permission1, _ = Permission.objects.get_or_create(
+            codename='can_view',
+            name='Can view entities',
             content_type=content_type,
         )
 
-        group1, _ = Group.objects.get_or_create(name="Project 1 - developers")
-        group1.permissions.add(permission)
-        group2, _ = Group.objects.get_or_create(name="Project 2 - developers")
-        group2.permissions.add(permission)
-        group3, _ = Group.objects.get_or_create(name="Project 3 - developers")
-        group3.permissions.add(permission)
+        permission2, _ = Permission.objects.get_or_create(
+            codename='can_edit',
+            name='Can add or edit entities',
+            content_type=content_type,
+        )
+
+        group1, _ = Group.objects.get_or_create(name="developers")
+        group1.permissions.add(permission1)
+        group1.permissions.add(permission2)
+        group2, _ = Group.objects.get_or_create(name="viewers")
+        group2.permissions.add(permission1)
 
         GitUser.objects.all().delete()
 
@@ -33,9 +37,7 @@ class Command(BaseCommand):
         user1.groups.add(group1)
         user2 = GitUser.objects.create_user("user2", "user2@mailinator.com", "user2")
         user2.groups.add(group2)
-        user2.groups.add(group1)
         user3 = GitUser.objects.create_user("user3", "user3@mailinator.com", "user3")
-        user3.groups.add(group3)
 
         user1.save()
         user2.save()
