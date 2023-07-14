@@ -129,6 +129,12 @@ def edit_profile(request, user_id):
         return redirect('index')
 
 
+def delete_profile(request, user_id):
+    user = get_object_or_404(GitUser, id=user_id)
+    user.delete()
+    return redirect('index')
+
+
 def git_register(request):
     if request.user.is_authenticated:
         return redirect('index')

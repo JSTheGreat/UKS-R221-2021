@@ -11,5 +11,6 @@ urlpatterns = [
     path('login/', views.git_login, name='git_login'),
     path('logout/', views.git_logout, name='git_logout'),
     path('register/', views.git_register, name='git_register'),
-    path('edit_profile/<int:user_id>', views.edit_profile, name='edit_profile')
+    path('edit_profile/<int:user_id>', views.edit_profile, name='edit_profile'),
+    path('delete_profile/<int:user_id>', views.delete_profile, name='delete_profile')
 ]
