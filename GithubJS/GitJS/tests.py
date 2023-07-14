@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .management.commands.fill_database import Command
-from .models import Project
+from .models import Project, GitUser
 
 
 class InitialTests(TestCase):
@@ -73,9 +73,44 @@ class InitialTests(TestCase):
     def test_login_successful(self):
         context = {'uname': 'user1', 'psw': 'user1'}
         response = self.client.post('http://localhost:8000/login/', context, follow=True)
-        self.assertRedirects(response, '')
+        self.assertRedirects(response, '/')
 
     def test_login_unsuccessful(self):
         context = {'uname': 'user2', 'psw': 'user3'}
+        response = self.client.post('http://localhost:8000/login/', context, follow=True)
+        self.assertTrue(response.context['login_has_error'])
+
+    def test_register_successful(self):
+        context = {'uname': 'user4', 'mail': 'sth@mail.com',
+                   'psw': 'user4', 'psw_repeat': 'user4', 'role': 'Developer'}
+        response = self.client.post('http://localhost:8000/register/', context, follow=True)
+        self.assertRedirects(response, '/')
+
+    def test_register_unsuccessful(self):
+        context = {'uname': 'user4', 'mail': 'sth@mail.com',
+                   'psw': 'user4', 'psw_repeat': 'not_a_repeat', 'role': 'Developer'}
+        response = self.client.post('http://localhost:8000/register/', context, follow=True)
+        self.assertEqual('Passwords don\'t match!', response.context['error_message'])
+
+    def test_edit_profile_successful(self):
+        context = {'uname': 'user1-new', 'mail': 'user1@mailinator.com', 'role': 'Viewer'}
+        user_id = GitUser.objects.get(username='user1')
+        response = self.client.post('http://localhost:8000/edit_profile/'+str(user_id), context, follow=True)
+        self.assertRedirects(response, '/')
+
+        context = {'uname': 'user1', 'psw': 'user1'}
+        response = self.client.post('http://localhost:8000/login/', context, follow=True)
+        self.assertTrue(response.context['login_has_error'])
+
+        context = {'uname': 'user1-new', 'psw': 'user1'}
+        response = self.client.post('http://localhost:8000/login/', context, follow=True)
+        self.assertRedirects(response, '/')
+
+    def test_delete_profile(self):
+        user_id = GitUser.objects.get(username='user1')
+        response = self.client.post('http://localhost:8000/delete_profile/' + str(user_id), follow=True)
+        self.assertRedirects(response, '/')
+
+        context = {'uname': 'user1', 'psw': 'user1'}
         response = self.client.post('http://localhost:8000/login/', context, follow=True)
         self.assertTrue(response.context['login_has_error'])
