@@ -97,7 +97,7 @@ class InitialTests(TestCase):
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
         context = {'uname': 'user1-new', 'mail': 'user1@mailinator.com', 'role': 'Viewer'}
-        user_id = GitUser.objects.get(username='user1')
+        user_id = GitUser.objects.get(username='user1').id
         response = self.client.post('http://localhost:8000/edit_profile/'+str(user_id), context, follow=True)
         self.assertRedirects(response, '/')
 
@@ -112,8 +112,7 @@ class InitialTests(TestCase):
     def test_delete_profile(self):
         context = {'uname': 'user1', 'psw': 'user1'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
-
-        user_id = GitUser.objects.get(username='user1')
+        user_id = GitUser.objects.get(username='user1').id
         response = self.client.post('http://localhost:8000/delete_profile/' + str(user_id), follow=True)
         self.assertRedirects(response, '/')
 
