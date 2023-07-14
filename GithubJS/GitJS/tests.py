@@ -54,3 +54,13 @@ class InitialTests(TestCase):
 
         project = Project.objects.get(id=1)
         self.assertEqual(project.get_branch_number(), 4)
+
+    def test_login_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        response = self.client.post('http://localhost:8000/login/', context, follow=True)
+        self.assertEqual(reverse('index'), 302, response.reditert_chain[0])
+
+    def test_login_unsuccessful(self):
+        context = {'uname': 'user2', 'psw': 'user3'}
+        response = self.client.post('http://localhost:8000/login/', context, follow=True)
+        self.assertTrue(response.context['login_has_error'])
