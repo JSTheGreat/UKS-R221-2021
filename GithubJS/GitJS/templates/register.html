@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style-login.css' %}"/>
+    <title>{{ title }}</title>
+
+</head>
+<body>
+
+<h2>Registration form</h2>
+
+<form action="/{{form_action}}" method="post">
+    {% csrf_token %}
+
+    <div class="container">
+
+        <label for="uname"><b>Username</b></label>
+        <input type="text" placeholder="Enter username..." id="uname" name="uname" value="{{user.uname}}" required>
+
+        <label for="mail"><b>Email</b></label>
+        <input type="text" placeholder="Enter email..." id="mail" name="mail" value="{{user.mail}}" required>
+
+        {% if user.uname == '' %}
+        <label for="psw"><b>Password</b></label>
+        <input type="password" placeholder="Enter password..." id="psw" name="psw" required>
+
+        <label for="psw_repeat"><b>Repeat password</b></label>
+        <input type="password" placeholder="Repeat password..." id="psw_repeat" name="psw_repeat" required>
+        {% endif %}
+
+        <label for="role"><b>Your role</b></label>
+        <select id="role" name="role" required>
+            {% if user.role == 'Developer' %}
+            <option selected>Developer</option>
+            <option>Viewer</option>
+            {% else %}
+            <option>Developer</option>
+            <option selected>Viewer</option>
+            {% endif %}
+        </select>
+
+        {% if 'Register' in title %}
+        <button type="submit">Register</button>
+        {% else %}
+        <button type="submit">Edit profile</button>
+        {% endif %}
+
+        {% if error_message %}
+        <label>
+            <span class="err">{{error_message}}</span>
+        </label>
+        {% endif %}
+    </div>
+
+</form>
+
+</body>
+</html>

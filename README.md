@@ -6,7 +6,7 @@ This is a web based VCS, project management and collaboration tool. GitHub's twi
 ## Model
 Current version of the class diagram:
 
-![class diagram](https://github.com/JSTheGreat/UKS-R221-2021/blob/feature-class_diagram/uml/oop_diagram.drawio.png?raw=true)
+![class diagram](https://github.com/JSTheGreat/UKS-R221-2021/blob/develop/uml/oop_diagram.drawio.png?raw=true)
 
 ## Setup:
 
