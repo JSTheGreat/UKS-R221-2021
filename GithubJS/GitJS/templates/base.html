@@ -17,13 +17,19 @@
           <li class="base-link">
               <a href="{% url 'index' %}">Home</a>
           </li>
+          {% if request.user.is_authenticated %}
           <li class="base-link">
-              {% if request.user.is_authenticated %}
-                <a href="{% url 'git_logout' %}">Log Out</a>
-              {% else %}
-                <a href="{% url 'git_login' %}">Log In</a>
-              {% endif %}
+            <a href="{% url 'git_logout' %}">Log Out</a>
           </li>
+          <li class="base-link">
+            <a href="{% url 'edit_profile' request.user.id %}">Edit profile</a>
+          </li>
+          {% else %}
+          <li class="base-link">
+            <a href="{% url 'git_login' %}">Log In</a>
+          </li>
+          {% endif %}
+
           <li class="base-link">
               <a href="{% url 'single_project' 1 %}">First project</a>
           </li>
