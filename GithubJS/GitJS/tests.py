@@ -92,7 +92,10 @@ class InitialTests(TestCase):
         response = self.client.post('http://localhost:8000/register/', context, follow=True)
         self.assertEqual('Passwords don\'t match!', response.context['error_message'])
 
-    def test_edit_profile_successful(self):
+    def test_edit_profile(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
         context = {'uname': 'user1-new', 'mail': 'user1@mailinator.com', 'role': 'Viewer'}
         user_id = GitUser.objects.get(username='user1')
         response = self.client.post('http://localhost:8000/edit_profile/'+str(user_id), context, follow=True)
@@ -107,6 +110,9 @@ class InitialTests(TestCase):
         self.assertRedirects(response, '/')
 
     def test_delete_profile(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
         user_id = GitUser.objects.get(username='user1')
         response = self.client.post('http://localhost:8000/delete_profile/' + str(user_id), follow=True)
         self.assertRedirects(response, '/')
