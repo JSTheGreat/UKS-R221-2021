@@ -101,6 +101,8 @@ class InitialTests(TestCase):
         response = self.client.post('http://localhost:8000/edit_profile/'+str(user_id), context, follow=True)
         self.assertRedirects(response, '/')
 
+        self.client.logout()
+
         context = {'uname': 'user1', 'psw': 'user1'}
         response = self.client.post('http://localhost:8000/login/', context, follow=True)
         self.assertTrue(response.context['login_has_error'])
