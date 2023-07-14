@@ -29,25 +29,40 @@ class InitialTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_find_project_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
         response = self.client.get('http://localhost:8000/2/')
         self.assertEqual(response.status_code, 200)
 
     def test_find_project_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
         response = self.client.get('http://localhost:8000/99/')
         self.assertEqual(response.status_code, 404)
 
     def test_find_non_matching_branch(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
         response = self.client.get('http://localhost:8000/1/branch/2')
         self.assertEqual(response.status_code, 200)
         response = self.client.get('http://localhost:8000/1/branch/5')
         self.assertEqual(response.status_code, 404)
 
     def test_add_branch_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
         context = {'new_branch': '  '}
         response = self.client.post(reverse('add_branch', args=(1,)), context, follow=True)
         self.assertEqual('Branch name can\'t be empty', response.context['error_message'])
 
     def test_add_branch_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
         context = {'new_branch': 'new branch name'}
         response = self.client.post(reverse('add_branch', args=(1,)), context, follow=True)
         self.assertEqual((reverse('single_project', args=(1,)), 302), response.redirect_chain[0])
@@ -58,7 +73,7 @@ class InitialTests(TestCase):
     def test_login_successful(self):
         context = {'uname': 'user1', 'psw': 'user1'}
         response = self.client.post('http://localhost:8000/login/', context, follow=True)
-        self.assertEqual(reverse('index'), 302, response.reditert_chain[0])
+        self.assertEqual(reverse('index'), 302, response.redirect_chain[0])
 
     def test_login_unsuccessful(self):
         context = {'uname': 'user2', 'psw': 'user3'}
