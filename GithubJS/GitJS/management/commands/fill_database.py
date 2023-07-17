@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 
-from ...models import Project, Branch, GitUser
+from ...models import Project, Branch, GitUser, StarredProject
 
 
 class Command(BaseCommand):
@@ -43,16 +43,22 @@ class Command(BaseCommand):
         user2.save()
         user3.save()
 
+    def _add_starred(self, user_id, project_id):
+        sp = StarredProject(user_id=user_id, project_id=project_id)
+        sp.save()
+
     def _add_projects(self):
         Project.objects.all().delete()
 
         p1 = Project(id=1, title="Project 1")
         p1.lead = GitUser.objects.get_by_natural_key("user1")
         p1.save()
+        self._add_starred(p1.id, p1.lead.pk)
 
         p2 = Project(id=2, title="Project 2")
         p2.lead = GitUser.objects.get_by_natural_key("user2")
         p2.save()
+        self._add_starred(p2.id, p2.lead.pk)
 
         p3 = Project(id=3, title="Project 3")
         p3.lead = GitUser.objects.get_by_natural_key("user3")

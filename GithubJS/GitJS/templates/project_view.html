@@ -2,9 +2,25 @@
 {% block content %}
     <h1>{{ project.title }}</h1>
     {% block proba %}
-    <ul>
+    <div>
+        {% if starred %}
+        <a href="{% url 'remove_starred' project.id %}">
+            <button class="btn btn-info">Unstar</button>
+        </a>
+        {% else %}
+        <a href="{% url 'add_starred' project.id %}">
+            <button class="btn btn-info">Star</button>
+        </a>
+        {% endif %}
+        <button class="btn btn-info">Watch</button>
+        <button class="btn btn-info">Fork</button>
+    </div>
+    <br>
+    <ul class="list-group">
     {% for branch in project.branch_set.all %}
-        <li><a href="{% url 'single_branch' project.id branch.id %}">{{ branch.name }}</a></li>
+        <li class="list-group-item">
+            <a href="{% url 'single_branch' project.id branch.id %}">{{ branch.name }}</a>
+        </li>
     {% endfor %}
     </ul>
 
