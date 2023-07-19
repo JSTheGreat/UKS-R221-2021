@@ -12,7 +12,17 @@
             <button class="btn btn-info">Star</button>
         </a>
         {% endif %}
-        <button class="btn btn-info">Watch</button>
+
+        {% if watched %}
+        <a href="{% url 'remove_watched' project.id %}">
+            <button class="btn btn-info">Unwatch</button>
+        </a>
+        {% else %}
+        <a href="{% url 'add_watched' project.id %}">
+            <button class="btn btn-info">Watch</button>
+        </a>
+        {% endif %}
+
         <button class="btn btn-info">Fork</button>
     </div>
     <br>

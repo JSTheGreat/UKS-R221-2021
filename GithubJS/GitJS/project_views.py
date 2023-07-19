@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 
-from .models import Project, Branch, GitUser, StarredProject
+from .models import Project, Branch, GitUser, StarredProject, WatchedProject
 
 from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
@@ -20,9 +20,21 @@ def single_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     try:
         starred = StarredProject.objects.get(project_id=project_id, user_id=request.user.pk)
-        return render(request, 'project_view.html', {'title': project.title, "project": project, "starred": True})
+        try:
+            watched = WatchedProject.objects.get(project_id=project_id, user_id=request.user.pk)
+            return render(request, 'project_view.html', {'title': project.title, "project": project,
+                                                         "starred": True, "watched": True})
+        except:
+            return render(request, 'project_view.html', {'title': project.title, "project": project,
+                                                         "starred": True, "watched": False})
     except:
-        return render(request, 'project_view.html', {'title': project.title, "project": project, "starred": False})
+        try:
+            watched = WatchedProject.objects.get(project_id=project_id, user_id=request.user.pk)
+            return render(request, 'project_view.html', {'title': project.title, "project": project,
+                                                         "starred": False, "watched": True})
+        except:
+            return render(request, 'project_view.html', {'title': project.title, "project": project,
+                                                         "starred": False, "watched": False})
 
 
 @login_required(login_url='login/')
@@ -45,4 +57,27 @@ def add_starred(request, project_id):
 def remove_starred(request, project_id):
     user = get_object_or_404(GitUser, id=request.user.pk)
     user.remove_starred(project_id)
+    return redirect('index')
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_view', raise_exception=True)
+def watched_project_changes(request):
+    user = get_object_or_404(GitUser, id=request.user.pk)
+    return render(request, 'updates.html', {'title': 'Watched project changes', 'changes': user.get_watched_changes()})
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_view', raise_exception=True)
+def add_watched(request, project_id):
+    user = get_object_or_404(GitUser, id=request.user.pk)
+    user.add_watched(project_id)
+    return redirect('index')
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_view', raise_exception=True)
+def remove_watched(request, project_id):
+    user = get_object_or_404(GitUser, id=request.user.pk)
+    user.remove_watched(project_id)
     return redirect('index')

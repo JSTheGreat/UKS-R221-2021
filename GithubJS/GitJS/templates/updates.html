@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ title }}</h1>
+    <br>
+
+    <ul class="list-group">
+    {% for change in changes %}
+    <li class="list-group-item">
+        <a href="{% url 'single_project' change.project_id %}">
+            {{change.project_id}}
+        </a>
+        <span>{{change.message}} on {{change.up_date}}</span>
+    </li>
+    {% endfor %}
+    </ul>
+{% endblock %}

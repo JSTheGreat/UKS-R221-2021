@@ -15,5 +15,8 @@ urlpatterns = [
     path('delete_profile/<int:user_id>', views.delete_profile, name='delete_profile'),
     path('add_starred/<int:project_id>', project_views.add_starred, name='add_starred'),
     path('remove_starred/<int:project_id>', project_views.remove_starred, name='remove_starred'),
-    path('my_starred/', project_views.starred_projects, name='my_starred')
+    path('my_starred/', project_views.starred_projects, name='my_starred'),
+    path('start_watch/<int:project_id>', project_views.add_watched, name='add_watched'),
+    path('stop_watch/<int:project_id>', project_views.remove_watched, name='remove_watched'),
+    path('my_watched/', project_views.watched_project_changes, name='my_watched')
 ]

@@ -57,6 +57,7 @@ def add_branch(request, project_id):
                                                         "title": "Error!"})
         except:
             b.save()
+            project.update_users('Branch ' + b.name + ' added to project ' + project.title)
             return HttpResponseRedirect(reverse("single_project", args=(project.id,)))
 
 
