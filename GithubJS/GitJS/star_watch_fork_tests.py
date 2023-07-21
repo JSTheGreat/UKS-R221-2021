@@ -1,8 +1,8 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 
-from ..management.commands.fill_database import Command
-from ..models import Project, GitUser
+from .management.commands.fill_database import Command
+from .models import Project, GitUser
 
 
 class StarWatchForkTests(TestCase):
