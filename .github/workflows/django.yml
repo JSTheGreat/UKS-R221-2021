@@ -38,3 +38,4 @@ jobs:
       run: |
         cd GithubJS
         python manage.py test GitJS --noinput
+        python manage.py test GitJS.tests --noinput
