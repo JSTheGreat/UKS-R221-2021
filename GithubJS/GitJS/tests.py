@@ -121,3 +121,23 @@ class InitialTests(TestCase):
         context = {'uname': 'user1', 'psw': 'user1'}
         response = self.client.post('http://localhost:8000/login/', context, follow=True)
         self.assertTrue(response.context['login_has_error'])
+
+    def test_get_starred(self):
+        user1 = GitUser.objects.get(username='user1')
+        starred1 = user1.get_starred_projects()
+        self.assertTrue(starred1[0].title == 'Project 2')
+        user2 = GitUser.objects.get(username='user2')
+        starred2 = user2.get_starred_projects()
+        self.assertTrue(starred2[0].title == 'Project 1')
+
+    def test_add_starred(self):
+        user2 = GitUser.objects.get(username='user2')
+        starred_before = len(user2.get_starred_projects())
+        user2.add_starred(3)
+        self.assertTrue(len(user2.get_starred_projects()) > starred_before)
+
+    def test_remove_starred(self):
+        user2 = GitUser.objects.get(username='user2')
+        starred_before = len(user2.get_starred_projects())
+        user2.remove_starred(1)
+        self.assertTrue(len(user2.get_starred_projects()) < starred_before)
