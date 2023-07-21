@@ -23,7 +23,11 @@
         </a>
         {% endif %}
 
-        <button class="btn btn-info">Fork</button>
+        {% if can_fork %}
+        <a href="{% url 'fork' project.id %}">
+            <button class="btn btn-info">Fork</button>
+        </a>
+        {% endif %}
     </div>
     <br>
     <ul class="list-group">

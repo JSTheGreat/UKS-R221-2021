@@ -18,5 +18,7 @@ urlpatterns = [
     path('my_starred/', project_views.starred_projects, name='my_starred'),
     path('start_watch/<int:project_id>', project_views.add_watched, name='add_watched'),
     path('stop_watch/<int:project_id>', project_views.remove_watched, name='remove_watched'),
-    path('my_watched/', project_views.watched_project_changes, name='my_watched')
+    path('my_watched/', project_views.watched_project_changes, name='my_watched'),
+    path('fork/<int:project_id>', project_views.fork_project, name='fork'),
+    path('my_projects', project_views.my_projects, name='my_projects')
 ]
