@@ -141,3 +141,31 @@ class InitialTests(TestCase):
         starred_before = len(user2.get_starred_projects())
         user2.remove_starred(1)
         self.assertTrue(len(user2.get_starred_projects()) < starred_before)
+
+    def test_get_watched(self):
+        user1 = GitUser.objects.get(username='user1')
+        watched1 = user1.get_watched_changes()
+        self.assertTrue(watched1[0].message == 'Branch Branch 3 added to project Project 1')
+        self.assertTrue(watched1[1].message == 'Branch Branch 2 added to project Project 1')
+        self.assertTrue(watched1[2].message == 'Branch Branch 1 added to project Project 1')
+        user2 = GitUser.objects.get(username='user2')
+        watched2 = user2.get_watched_changes()
+        self.assertTrue(watched2[0].message == 'Branch Branch 3 added to project Project 1')
+        self.assertTrue(watched2[1].message == 'Branch Branch 2 added to project Project 1')
+        self.assertTrue(watched2[2].message == 'Branch Branch 1 added to project Project 1')
+
+    def test_add_watched(self):
+        user2 = GitUser.objects.get(username='user2')
+        watched_before = len(user2.get_watched_changes())
+        user2.add_starred(3)
+        watched_project = Project.objects.get(id=3)
+        watched_project.update_users("Generic update message")
+        self.assertTrue(len(user2.get_watched_changes()) > watched_before)
+
+    def test_remove_watched(self):
+        user2 = GitUser.objects.get(username='user2')
+        watched_before = len(user2.get_watched_changes())
+        user2.remove_starred(1)
+        unwatched_project = Project.objects.get(id=3)
+        unwatched_project.update_users("Generic update message")
+        self.assertTrue(len(user2.get_watched_changes()) == watched_before)
