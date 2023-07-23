@@ -6,7 +6,7 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 
-from .models import Project, Branch, GitUser
+from .models import Project, Branch, GitUser, StarredProject
 
 from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
@@ -24,13 +24,6 @@ def index(request):
 def cached_initial(request):
     redis.Redis(host='uks_js_redis', port=6379)
     return render(request, "cache_test.html", {"title": "Redis test"})
-
-
-@login_required(login_url='login/')
-@permission_required('GitJS.can_view', raise_exception=True)
-def project_view(request, project_id):
-    project = get_object_or_404(Project, id=project_id)
-    return render(request, 'project_view.html', {'title': project.title, "project": project})
 
 
 def single_branch(request, project_id, branch_id):
@@ -64,6 +57,7 @@ def add_branch(request, project_id):
                                                         "title": "Error!"})
         except:
             b.save()
+            project.update_users('Branch ' + b.name + ' added to project ' + project.title)
             return HttpResponseRedirect(reverse("single_project", args=(project.id,)))
 
 
