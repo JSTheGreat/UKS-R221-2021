@@ -169,3 +169,72 @@ class InitialTests(TestCase):
         unwatched_project = Project.objects.get(id=3)
         unwatched_project.update_users("Generic update message")
         self.assertTrue(len(user2.get_watched_changes()) == watched_before)
+
+    def test_get_starred_client(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.get('http://localhost:8000/my_starred', follow=True)
+        starred_project = Project.objects.get(id=2)
+        self.assertTrue(starred_project in response.context['projects'])
+
+    def test_get_watched_client(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.get('http://localhost:8000/my_watched', follow=True)
+        watched_project = Project.objects.get(id=1)
+        self.assertTrue(watched_project in response.context['projects'])
+
+    def test_add_starred_client(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.get('http://localhost:8000/add_starred/3', follow=True)
+        self.assertRedirects(response, '/')
+        starred_project = Project.objects.get(id=3)
+        response = self.client.get('http://localhost:8000/my_starred', follow=True)
+        self.assertTrue(starred_project in response.context['projects'])
+
+    def test_remove_watched_client(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.get('http://localhost:8000/remove_starred/2', follow=True)
+        self.assertRedirects(response, '/')
+        starred_project = Project.objects.get(id=2)
+        response = self.client.get('http://localhost:8000/my_starred', follow=True)
+        self.assertTrue(starred_project not in response.context['projects'])
+
+    def test_add_watched_client(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.get('http://localhost:8000/start_watch/3', follow=True)
+        self.assertRedirects(response, '/')
+        watched_project = Project.objects.get(id=3)
+        watched_project.update_users('Generic update message')
+        response = self.client.get('http://localhost:8000/my_watched', follow=True)
+        self.assertEqual(response.context['changes'][0].message, 'Generic update message')
+
+    def test_remove_watched_client(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.get('http://localhost:8000/stop_watch/1', follow=True)
+        self.assertRedirects(response, '/')
+        watched_project = Project.objects.get(id=3)
+        watched_project.update_users('Generic update message')
+        response = self.client.get('http://localhost:8000/my_watched', follow=True)
+        self.assertNotEqual(response.context['changes'][0].message, 'Generic update message')
+
+    def test_fork(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.get('http://localhost:8000/my_projects', follow=True)
+        size_before = len(response.context['projects'])
+        response = self.client.get('http://localhost:8000/fork/2', follow=True)
+        self.assertRedirects(response, '/')
+        response = self.client.get('http://localhost:8000/my_projects', follow=True)
+        self.assertTrue(len(response.context['projects']) > size_before)
