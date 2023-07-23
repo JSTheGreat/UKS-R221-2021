@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'style.css' %}"/>
+    <title>{{title}}</title>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <h1>GITHUB JS HOME</h1>
+  </div>
+    <div class="left">
+      <ul class="list-group">
+          <li class="list-group-item">
+              <a href="{% url 'index' %}">Home</a>
+          </li>
+          {% if request.user.is_authenticated %}
+          <li class="list-group-item">
+            <a href="{% url 'git_logout' %}">Log Out</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'edit_profile' request.user.id %}">Edit profile</a>
+          </li>
+          <li class="list-group-item">
+            <a href="{% url 'delete_profile' request.user.id %}">Delete profile</a>
+          </li>
+          <li class="list-group-item">
+              <a href="{% url 'my_projects' %}">My projects</a>
+          </li>
+          <li class="list-group-item">
+              <a href="{% url 'my_watched' %}">Watched project changes</a>
+          </li>
+          <li class="list-group-item">
+              <a href="{% url 'my_starred' %}">Starred projects</a>
+          </li>
+          {% else %}
+          <li class="list-group-item">
+            <a href="{% url 'git_login' %}">Log In</a>
+          </li>
+          {% endif %}
+          <li class="list-group-item">
+              <a href="{% url 'test_redis_page' %}">Redis test</a>
+          </li>
+      </ul>
+      {% block links %}{% endblock %}
+    </div>
+    <div class="center">
+      {% block content %}{% endblock %}
+    </div>
+    <div class="footer">This is a clone of Github created by Jovan Svorcan R2 21/2021</div>
+</div>
+</body>
+</html>

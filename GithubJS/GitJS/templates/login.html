@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style-login.css' %}"/>
+    <title>{{ title }}</title>
+
+</head>
+<body>
+
+<h2>Login Form</h2>
+
+<form action="{% url 'git_login' %}" method="post">
+    {% csrf_token %}
+
+    <div class="container">
+        <label for="uname"><b>Username</b></label>
+        <input type="text" placeholder="Enter username..." id="uname" name="uname" required>
+
+        <label for="psw"><b>Password</b></label>
+        <input type="password" placeholder="Enter password..." id="psw" name="psw" required>
+
+        <a href="{% url 'git_register' %}">
+            Don't have an account yet? Register here
+        </a>
+
+        <button type="submit">Log In</button>
+        {% if login_has_error %}
+        <label>
+            <span class="err">Wrong username or password</span>
+        </label>
+        {% endif %}
+    </div>
+
+</form>
+
+</body>
+</html>
