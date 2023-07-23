@@ -183,8 +183,10 @@ class InitialTests(TestCase):
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
         response = self.client.get('http://localhost:8000/my_watched', follow=True)
-        watched_project = Project.objects.get(id=1)
-        self.assertTrue(watched_project in response.context['projects'])
+        watched_changes = response.context['changes']
+        self.assertEqual(watched_changes[0].message, 'Branch Branch 3 added to project Project 1')
+        self.assertEqual(watched_changes[1].message, 'Branch Branch 2 added to project Project 1')
+        self.assertEqual(watched_changes[2].message, 'Branch Branch 1 added to project Project 1')
 
     def test_add_starred_client(self):
         context = {'uname': 'user1', 'psw': 'user1'}

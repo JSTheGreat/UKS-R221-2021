@@ -1,17 +1,7 @@
-from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import Group
-from django.core.exceptions import PermissionDenied
-from django.urls import reverse
 
 from .models import Project, Branch, GitUser, StarredProject, WatchedProject
-
-from django.conf import settings
-from django.core.cache.backends.base import DEFAULT_TIMEOUT
-from django.views.decorators.cache import cache_page
-import redis
 
 
 @login_required(login_url='login/')
