@@ -157,7 +157,7 @@ class InitialTests(TestCase):
     def test_add_watched(self):
         user2 = GitUser.objects.get(username='user2')
         watched_before = len(user2.get_watched_changes())
-        user2.add_starred(3)
+        user2.add_watched(3)
         watched_project = Project.objects.get(id=3)
         watched_project.update_users("Generic update message")
         self.assertTrue(len(user2.get_watched_changes()) > watched_before)
@@ -165,7 +165,7 @@ class InitialTests(TestCase):
     def test_remove_watched(self):
         user2 = GitUser.objects.get(username='user2')
         watched_before = len(user2.get_watched_changes())
-        user2.remove_starred(1)
+        user2.remove_watched(1)
         unwatched_project = Project.objects.get(id=3)
         unwatched_project.update_users("Generic update message")
         self.assertTrue(len(user2.get_watched_changes()) == watched_before)
