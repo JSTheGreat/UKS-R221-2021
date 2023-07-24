@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .management.commands.fill_database import Command
-from .models import Project, GitUser
+from .models import Project, GitUser, Branch
 
 
 class InitialTests(TestCase):
@@ -240,3 +240,39 @@ class InitialTests(TestCase):
         self.assertRedirects(response, '/')
         response = self.client.get('http://localhost:8000/my_projects', follow=True)
         self.assertTrue(len(response.context['projects']) > size_before)
+
+    def test_edit_branch_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        branch_before = Branch.objects.get(id=1).name
+        context = {'new_branch': 'new branch name'}
+        response = self.client.post(reverse('edit_branch', args=(1,)), context, follow=True)
+        self.assertNotEqual(branch_before, Branch.objects.get(id=1).name)
+
+    def test_edit_branch_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_branch': '  '}
+        response = self.client.post(reverse('edit_branch', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Branch name can\'t be empty')
+
+        context = {'new_branch': 'Branch 2'}
+        response = self.client.post(reverse('edit_branch', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Branch name already exists')
+
+    def test_delete_branch_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        branch_size_before = len(Branch.objects.all())
+        self.client.post(reverse('delete_branch', args=(1,)), context, follow=True)
+        self.assertTrue(branch_size_before > len(Branch.objects.all()))
+
+    def test_delete_branch_unsuccessful(self):
+        context = {'uname': 'user2', 'psw': 'user2'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.post(reverse('delete_branch', args=(1,)), context, follow=True)
+        self.assertEqual(response.status_code, 404)
