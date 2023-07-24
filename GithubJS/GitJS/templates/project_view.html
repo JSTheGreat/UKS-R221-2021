@@ -34,12 +34,24 @@
     {% for branch in project.branch_set.all %}
         <li class="list-group-item">
             <a href="{% url 'single_branch' project.id branch.id %}">{{ branch.name }}</a>
+            {% if not can_fork %}
+                <a href="{% url 'edit_branch' branch.id %}">
+                    <button class="btn btn-warning">Edit</button>
+                </a>
+                <a href="{% url 'delete_branch' branch.id %}">
+                    <button class="btn btn-danger">Delete</button>
+                </a>
+            {% endif %}
         </li>
     {% endfor %}
     </ul>
 
-    <br>
+    {% if not can_fork %}
+        <br>
+        <a href="{% url 'add_branch' project.id %}">
+            <button class="btn btn-success">Add branch</button>
+        </a>
+    {% endif %}
 
-    <a href="{% url 'add_branch' project.id %}"><button>Add branch</button></a>
     {% endblock %}
 {% endblock %}
