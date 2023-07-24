@@ -275,4 +275,4 @@ class InitialTests(TestCase):
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
         response = self.client.post(reverse('delete_branch', args=(1,)), context, follow=True)
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
