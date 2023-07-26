@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ title }}</h1>
+
+    <br>
+    <div>
+        <a href="{% url 'milestones' project_id 'OPEN' %}">
+            <button class="btn btn-primary">OPEN</button>
+        </a>
+        <a href="{% url 'milestones' project_id 'CLOSED' %}">
+            <button class="btn btn-secondary">CLOSED</button>
+        </a>
+    </div>
+    <ul class="list-group">
+    {% for milestone in milestones %}
+        <li class="list-group-item">
+            {{milestone.title}} - {{milestone.due_date}} - {{milestone.state}}
+        </li>
+    {% endfor %}
+    </ul>
+
+{% endblock %}
