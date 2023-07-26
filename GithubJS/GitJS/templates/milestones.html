@@ -15,8 +15,19 @@
     {% for milestone in milestones %}
         <li class="list-group-item">
             {{milestone.title}} - {{milestone.due_date}} - {{milestone.state}}
+            <a>
+                <button class="btn btn-warning">Edit</button>
+            </a>
+            <a>
+                <button class="btn btn-danger">Delete</button>
+            </a>
         </li>
     {% endfor %}
     </ul>
+
+    <br>
+    <a href="{% url 'add_milestone' project_id %}">
+        <button class="btn btn-success">Add milestone</button>
+    </a>
 
 {% endblock %}

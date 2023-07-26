@@ -70,11 +70,11 @@ def edit_profile(request, user_id):
 
         error_message = ''
 
-        if username == '' or username is None:
+        if username.strip() == '' or username is None:
             error_message = 'Username can\'t remain empty!'
-        if email == '' or email is None:
+        if email.strip() == '' or email is None:
             error_message = 'Email can\'t remain empty!'
-        elif role == '' or role is None:
+        elif role.strip() == '' or role is None:
             error_message = 'You have to pick a role!'
 
         if error_message:
@@ -116,17 +116,17 @@ def git_register(request):
 
         error_message = ''
 
-        if username == '' or username is None:
+        if username.strip() == '' or username is None:
             error_message = 'Username can\'t remain empty!'
-        if email == '' or email is None:
+        elif email.strip() == '' or email is None:
             error_message = 'Email can\'t remain empty!'
-        elif password == '' or password is None:
+        elif password.strip() == '' or password is None:
             error_message = 'Password can\'t remain empty!'
-        elif repeated == '' or repeated is None:
+        elif repeated.strip() == '' or repeated is None:
             error_message = 'Password must be repeated!'
-        elif password != repeated:
+        elif password.strip() != repeated:
             error_message = 'Passwords don\'t match!'
-        elif role == '' or role is None:
+        elif role.strip() == '' or role is None:
             error_message = 'You have to pick a role!'
 
         if error_message:

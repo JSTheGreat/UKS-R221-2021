@@ -23,5 +23,6 @@ urlpatterns = [
     path('my_watched/', project_views.watched_project_changes, name='my_watched'),
     path('fork/<int:project_id>', project_views.fork_project, name='fork'),
     path('my_projects', project_views.my_projects, name='my_projects'),
-    path('milestones/<int:project_id>/<str:state>', milestone_views.get_milestones, name='milestones')
+    path('milestones/<int:project_id>/<str:state>', milestone_views.get_milestones, name='milestones'),
+    path('<int:project_id>/add_milestone', milestone_views.add_milestone, name='add_milestone')
 ]

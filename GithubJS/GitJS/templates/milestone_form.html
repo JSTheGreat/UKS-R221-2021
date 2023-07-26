@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>{{ title }}</h2>
+
+    <br>
+    <form action="/{{form_action}}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        {% if error_message %}<p class="error"><strong>{{ error_message }}</strong></p>{% endif %}
+        <label for="new_title">Title</label><br>
+        <input type="text" name="new_title" id="new_title" value="{{input_title}}" class="form-control" required>
+
+        <label for="new_desc">Description</label><br>
+        <textarea class="form-control" type="text" name="new_desc" id="new_desc" value="{{input_desc}}"
+                  rows="3" required>
+        </textarea>
+
+        <label for="due_date">Due date</label><br>
+        <input type="date" name="due_date" id="due_date" value="{{due_date}}" class="form-control" required>
+    </fieldset>
+
+        <br>
+    {% if input_title == '' %}
+        <input type="submit" value="Add" class="btn btn-success">
+    {% else %}
+        <input type="submit" value="Change" class="btn btn-warning">
+    {% endif %}
+    </form>
+{% endblock %}
