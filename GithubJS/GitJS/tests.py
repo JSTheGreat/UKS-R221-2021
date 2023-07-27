@@ -298,7 +298,7 @@ class InitialTests(TestCase):
         project = Project.objects.get(id=1)
         size_before = len(project.get_milestones('OPEN'))
         response = self.client.post(reverse('add_milestone', args=(1,)), context, follow=True)
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         self.assertTrue(len(project.get_milestones('OPEN')) > size_before)
 
     def test_add_milestone_unsuccessful(self):
