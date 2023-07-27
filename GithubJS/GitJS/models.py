@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+from enum import Enum
+
 
 class GitUser(User):
 
@@ -50,6 +52,10 @@ class Project(models.Model):
             update = ProjectUpdate(project_id=self.id, user_id=watched.user_id, up_date=new_date, message=message)
             update.save()
 
+    def get_milestones(self, state):
+        milestones = Milestone.objects.filter(project=self, state=state)
+        return milestones
+
 
 class StarredProject(models.Model):
     project_id = models.BigIntegerField()
@@ -70,4 +76,12 @@ class ProjectUpdate(models.Model):
 
 class Branch(models.Model):
     name = models.CharField(max_length=100)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+
+class Milestone(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.CharField(max_length=200)
+    due_date = models.DateTimeField("due date")
+    state = models.CharField(max_length=7)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)

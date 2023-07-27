@@ -3,8 +3,10 @@ from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
+import datetime
+
 from ...models import Project, Branch, GitUser, StarredProject,\
-    WatchedProject, ProjectUpdate
+    WatchedProject, ProjectUpdate, Milestone
 
 
 class Command(BaseCommand):
@@ -113,7 +115,36 @@ class Command(BaseCommand):
         b6.save()
         b6.project.update_users(self._get_branch_message(b6))
 
+    def _add_milestones(self):
+        Milestone.objects.all().delete()
+
+        m1 = Milestone(id=1, title="Milestone 1", description="Desc for milestone no 1", state='OPEN')
+        m1.project = Project.objects.get(id=1)
+        m1.due_date = timezone.now() + datetime.timedelta(days=20)
+        m1.save()
+
+        m2 = Milestone(id=2, title="Milestone 2", description="Desc for milestone no 2", state='CLOSED')
+        m2.project = Project.objects.get(id=1)
+        m2.due_date = timezone.now() - datetime.timedelta(days=2)
+        m2.save()
+
+        m3 = Milestone(id=3, title="Milestone 3", description="Desc for milestone no 3", state='OPEN')
+        m3.project = Project.objects.get(id=1)
+        m3.due_date = timezone.now() + datetime.timedelta(days=5)
+        m3.save()
+
+        m4 = Milestone(id=4, title="Milestone 4", description="Desc for milestone no 4", state='CLOSED')
+        m4.project = Project.objects.get(id=2)
+        m4.due_date = timezone.now() - datetime.timedelta(days=1)
+        m4.save()
+
+        m5 = Milestone(id=5, title="Milestone 5", description="Desc for milestone no 5", state='OPEN')
+        m5.project = Project.objects.get(id=2)
+        m5.due_date = timezone.now() + datetime.timedelta(days=4)
+        m5.save()
+
     def handle(self, *args, **options):
         self._add_users()
         self._add_projects()
         self._add_branches()
+        self._add_milestones()

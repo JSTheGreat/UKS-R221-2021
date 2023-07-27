@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .management.commands.fill_database import Command
-from .models import Project, GitUser, Branch
+from .models import Project, GitUser, Branch, Milestone
 
 
 class InitialTests(TestCase):
@@ -275,4 +275,95 @@ class InitialTests(TestCase):
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
         response = self.client.post(reverse('delete_branch', args=(1,)), context, follow=True)
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_milestones(self):
+        p1 = Project.objects.get(id=1)
+        open1 = p1.get_milestones('OPEN')
+        self.assertEqual(len(open1), 2)
+        closed1 = p1.get_milestones('CLOSED')
+        self.assertEqual(len(closed1), 1)
+
+        p2 = Project.objects.get(id=2)
+        open2 = p2.get_milestones('OPEN')
+        self.assertEqual(len(open2), 1)
+        closed2 = p2.get_milestones('CLOSED')
+        self.assertEqual(len(closed2), 1)
+
+    def test_add_milestone_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': 'New title', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
+        project = Project.objects.get(id=1)
+        size_before = len(project.get_milestones('OPEN'))
+        response = self.client.post(reverse('add_milestone', args=(1,)), context, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(len(project.get_milestones('OPEN')) > size_before)
+
+    def test_add_milestone_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  ', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
+        response = self.client.post(reverse('add_milestone', args=(1,)), context, follow=True)
+        self.assertEqual('Title can\'t be empty', response.context['error_message'])
+
+        context = {'new_title': 'New title', 'new_desc': '   ', 'due_date': '2024-10-10'}
+        response = self.client.post(reverse('add_milestone', args=(1,)), context, follow=True)
+        self.assertEqual('Description can\'t be empty', response.context['error_message'])
+
+        context = {'new_title': 'New title', 'new_desc': 'New Description', 'due_date': '2023-06-06'}
+        response = self.client.post(reverse('add_milestone', args=(1,)), context, follow=True)
+        self.assertEqual('Due date has to be a future date', response.context['error_message'])
+
+        context = {'new_title': 'Milestone 1', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
+        response = self.client.post(reverse('add_milestone', args=(1,)), context, follow=True)
+        self.assertEqual('Milestone with given title already exists', response.context['error_message'])
+
+    def test_edit_milestone_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        milestone_before = Milestone.objects.get(id=3)
+        context = {'new_title': 'New title', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
+        self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
+        milestone_after = Milestone.objects.get(id=3)
+        self.assertNotEqual(milestone_before.title, milestone_after.title)
+        self.assertNotEqual(milestone_before.description, milestone_after.description)
+        self.assertNotEqual(milestone_before.due_date, milestone_after.due_date)
+
+    def test_edit_milestone_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  ', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
+        response = self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
+        self.assertEqual('Title can\'t be empty', response.context['error_message'])
+
+        context = {'new_title': 'New title', 'new_desc': '   ', 'due_date': '2024-10-10'}
+        response = self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
+        self.assertEqual('Description can\'t be empty', response.context['error_message'])
+
+        context = {'new_title': 'New title', 'new_desc': 'New Description', 'due_date': '2023-06-06'}
+        response = self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
+        self.assertEqual('Due date has to be a future date', response.context['error_message'])
+
+        context = {'new_title': 'Milestone 1', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
+        response = self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
+        self.assertEqual('Milestone with given title already exists', response.context['error_message'])
+
+    def test_delete_milestone_succeful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        size_before = len(Milestone.objects.all())
+        self.client.post(reverse('delete_milestone', args=(1,)), context, follow=True)
+        self.assertTrue(size_before > len(Milestone.objects.all()))
+
+    def test_delete_milestone_unsuccessful(self):
+        context = {'uname': 'user2', 'psw': 'user2'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.post(reverse('delete_milestone', args=(1,)), context, follow=True)
         self.assertEqual(response.status_code, 403)

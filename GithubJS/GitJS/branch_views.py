@@ -14,8 +14,8 @@ def add_branch(request, project_id):
         return render(request, "branch_form.html", {"project": project, "title": "New branch", "input_value": "",
                                                     "form_action": str(project_id)+"/add_branch/"})
     else:
-        new_branch_name = request.POST['new_branch']
-        if new_branch_name.strip() == '':
+        new_branch_name = request.POST['new_branch'].strip()
+        if new_branch_name == '':
             error_message = "Branch name can't be empty"
             return render(request, "branch_form.html", {"project": project, "error_message": error_message,
                                                         "title": "Error!", "input_value": "",

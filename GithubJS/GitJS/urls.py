@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views, project_views, branch_views
+from . import views, project_views, branch_views, milestone_views
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -22,5 +22,9 @@ urlpatterns = [
     path('stop_watch/<int:project_id>', project_views.remove_watched, name='remove_watched'),
     path('my_watched/', project_views.watched_project_changes, name='my_watched'),
     path('fork/<int:project_id>', project_views.fork_project, name='fork'),
-    path('my_projects', project_views.my_projects, name='my_projects')
+    path('my_projects', project_views.my_projects, name='my_projects'),
+    path('milestones/<int:project_id>/<str:state>', milestone_views.get_milestones, name='milestones'),
+    path('<int:project_id>/add_milestone', milestone_views.add_milestone, name='add_milestone'),
+    path('edit_milestone/<int:milestone_id>', milestone_views.edit_milestone, name='edit_milestone'),
+    path('delete_milestone/<int:milestone_id>', milestone_views.delete_milestone, name='delete_milestone')
 ]

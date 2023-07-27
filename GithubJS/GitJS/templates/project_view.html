@@ -28,6 +28,10 @@
             <button class="btn btn-info">Fork</button>
         </a>
         {% endif %}
+
+        <a class="ms-5" href="{% url 'milestones' project.id 'OPEN' %}">
+            <button class="btn btn-secondary">Milestones</button>
+        </a>
     </div>
     <br>
     <ul class="list-group">
