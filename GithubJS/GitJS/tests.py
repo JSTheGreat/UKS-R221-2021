@@ -317,6 +317,10 @@ class InitialTests(TestCase):
         response = self.client.post(reverse('add_milestone', args=(1,)), context, follow=True)
         self.assertEqual('Due date has to be a future date', response.context['error_message'])
 
+        context = {'new_title': 'Milestone 1', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
+        response = self.client.post(reverse('add_milestone', args=(1,)), context, follow=True)
+        self.assertEqual('Milestone with given title already exists', response.context['error_message'])
+
     def test_edit_milestone_successful(self):
         context = {'uname': 'user1', 'psw': 'user1'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
@@ -346,7 +350,7 @@ class InitialTests(TestCase):
         self.assertEqual('Due date has to be a future date', response.context['error_message'])
 
         context = {'new_title': 'Milestone 1', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
-        self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
+        response = self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
         self.assertEqual('Milestone with given title already exists', response.context['error_message'])
 
     def test_delete_milestone_succeful(self):
