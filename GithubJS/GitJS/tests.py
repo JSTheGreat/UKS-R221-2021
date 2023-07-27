@@ -295,9 +295,11 @@ class InitialTests(TestCase):
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
         context = {'new_title': 'New title', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
-        size_before = len(Milestone.objects.all())
+        project = Project.objects.get(id=1)
+        size_before = len(project.get_milestones('OPEN'))
         response = self.client.post(reverse('add_milestone', args=(1,)), context, follow=True)
-        self.assertTrue(len(Milestone.objects.all()) > size_before)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(len(project.get_milestones('OPEN')) > size_before)
 
     def test_add_milestone_unsuccessful(self):
         context = {'uname': 'user1', 'psw': 'user1'}
