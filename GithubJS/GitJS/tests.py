@@ -316,3 +316,50 @@ class InitialTests(TestCase):
         context = {'new_title': 'New title', 'new_desc': 'New Description', 'due_date': '2023-06-06'}
         response = self.client.post(reverse('add_milestone', args=(1,)), context, follow=True)
         self.assertEqual('Due date has to be a future date', response.context['error_message'])
+
+    def test_edit_milestone_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        milestone_before = Milestone.objects.get(id=3)
+        context = {'new_title': 'New title', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
+        self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
+        milestone_after = Milestone.objects.get(id=3)
+        self.assertNotEqual(milestone_before.title, milestone_after.title)
+        self.assertNotEqual(milestone_before.description, milestone_after.description)
+        self.assertNotEqual(milestone_before.due_date, milestone_after.due_date)
+
+    def test_edit_milestone_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  ', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
+        response = self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
+        self.assertEqual('Title can\'t be empty', response.context['error_message'])
+
+        context = {'new_title': 'New title', 'new_desc': '   ', 'due_date': '2024-10-10'}
+        response = self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
+        self.assertEqual('Description can\'t be empty', response.context['error_message'])
+
+        context = {'new_title': 'New title', 'new_desc': 'New Description', 'due_date': '2023-06-06'}
+        response = self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
+        self.assertEqual('Due date has to be a future date', response.context['error_message'])
+
+        context = {'new_title': 'Milestone 1', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
+        self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
+        self.assertEqual('Milestone with given title already exists', response.context['error_message'])
+
+    def test_delete_milestone_succeful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        size_before = len(Milestone.objects.all())
+        self.client.post(reverse('delete_milestone', args=(1,)), context, follow=True)
+        self.assertTrue(size_before > len(Milestone.objects.all()))
+
+    def test_delete_milestone_unsuccessful(self):
+        context = {'uname': 'user2', 'psw': 'user2'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.post(reverse('delete_milestone', args=(1,)), context, follow=True)
+        self.assertEqual(response.status_code, 403)
