@@ -297,7 +297,7 @@ class InitialTests(TestCase):
         context = {'new_title': 'New title', 'new_desc': 'New Description', 'due_date': '2024-10-10'}
         size_before = len(Milestone.objects.all())
         response = self.client.post(reverse('add_milestone', args=(1,)), context, follow=True)
-        self.assertRedirects(response, '/milestones/1/OPEN')
+        self.assertRedirects(response, 'milestones/1/OPEN')
         self.assertTrue(len(Milestone.objects.all()) > size_before)
 
     def test_add_milestone_unsuccessful(self):
