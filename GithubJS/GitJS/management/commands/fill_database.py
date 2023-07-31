@@ -6,7 +6,7 @@ from django.utils import timezone
 import datetime
 
 from ...models import Project, Branch, GitUser, StarredProject,\
-    WatchedProject, ProjectUpdate, Milestone, File
+    WatchedProject, ProjectUpdate, Milestone, File, Contributor
 
 
 class Command(BaseCommand):
@@ -43,6 +43,13 @@ class Command(BaseCommand):
         user2.groups.add(group2)
         user3 = GitUser.objects.create_user("user3", "user3@mailinator.com", "user3")
 
+        user4 = GitUser.objects.create_user("user4", "user4@mailinator.com", "user4")
+        user4.groups.add(group1)
+        user5 = GitUser.objects.create_user("user5", "user5@mailinator.com", "user5")
+        user5.groups.add(group2)
+        user6 = GitUser.objects.create_user("user6", "user6@mailinator.com", "user6")
+        user6.groups.add(group1)
+
         user1.save()
         user2.save()
         user3.save()
@@ -55,19 +62,28 @@ class Command(BaseCommand):
         wp = WatchedProject(id=item_id, user_id=user_id, project_id=project_id)
         wp.save()
 
+    def _add_contributor(self, item_id, username, project_id):
+        c = Contributor(id=item_id, username=username, project_id=project_id)
+        c.save()
+
     def _add_projects(self):
         Project.objects.all().delete()
         StarredProject.objects.all().delete()
         WatchedProject.objects.all().delete()
         ProjectUpdate.objects.all().delete()
+        Contributor.objects.all().delete()
 
         p1 = Project(id=1, title="Project 1")
         p1.lead = GitUser.objects.get_by_natural_key("user1")
         p1.save()
 
         p2 = Project(id=2, title="Project 2")
-        p2.lead = GitUser.objects.get_by_natural_key("user2")
+        p2.lead = GitUser.objects.get_by_natural_key("user5")
         p2.save()
+
+        p3 = Project(id=3, title="Project 3")
+        p3.lead = GitUser.objects.get_by_natural_key("user6")
+        p3.save()
 
         self._add_starred(1, p2.lead.pk, p1.id)
         self._add_starred(2, p1.lead.pk, p2.id)
@@ -75,9 +91,9 @@ class Command(BaseCommand):
         self._add_watched(1, p1.lead.pk, p1.id)
         self._add_watched(2, p2.lead.pk, p1.id)
 
-        p3 = Project(id=3, title="Project 3")
-        p3.lead = GitUser.objects.get_by_natural_key("user3")
-        p3.save()
+        self._add_contributor(1, GitUser.objects.get_by_natural_key("user4").username, p1.id)
+        self._add_contributor(2, GitUser.objects.get_by_natural_key("user5").username, p1.id)
+        self._add_contributor(3, GitUser.objects.get_by_natural_key("user6").username, p2.id)
 
     def _get_branch_message(self, branch):
         return 'Branch ' + branch.name + ' added to project ' + branch.project.title

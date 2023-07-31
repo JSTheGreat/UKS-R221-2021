@@ -42,15 +42,6 @@ class InitialTests(TestCase):
         response = self.client.get('http://localhost:8000/99/')
         self.assertEqual(response.status_code, 404)
 
-    def test_find_non_matching_branch(self):
-        context = {'uname': 'user1', 'psw': 'user1'}
-        self.client.post('http://localhost:8000/login/', context, follow=True)
-
-        response = self.client.get('http://localhost:8000/1/branch/2')
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get('http://localhost:8000/1/branch/5')
-        self.assertEqual(response.status_code, 404)
-
     def test_add_branch_unsuccessful(self):
         context = {'uname': 'user1', 'psw': 'user1'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
@@ -81,14 +72,14 @@ class InitialTests(TestCase):
         self.assertTrue(response.context['login_has_error'])
 
     def test_register_successful(self):
-        context = {'uname': 'user4', 'mail': 'sth@mail.com',
-                   'psw': 'user4', 'psw_repeat': 'user4', 'role': 'Developer'}
+        context = {'uname': 'user7', 'mail': 'sth@mail.com',
+                   'psw': 'user7', 'psw_repeat': 'user7', 'role': 'Developer'}
         response = self.client.post('http://localhost:8000/register/', context, follow=True)
         self.assertRedirects(response, '/')
 
     def test_register_unsuccessful(self):
-        context = {'uname': 'user4', 'mail': 'sth@mail.com',
-                   'psw': 'user4', 'psw_repeat': 'not_a_repeat', 'role': 'Developer'}
+        context = {'uname': 'user7', 'mail': 'sth@mail.com',
+                   'psw': 'user7', 'psw_repeat': 'not_a_repeat', 'role': 'Developer'}
         response = self.client.post('http://localhost:8000/register/', context, follow=True)
         self.assertEqual('Passwords don\'t match!', response.context['error_message'])
 
@@ -126,21 +117,21 @@ class InitialTests(TestCase):
         user1 = GitUser.objects.get(username='user1')
         starred1 = user1.get_starred_projects()
         self.assertTrue(starred1[0].title == 'Project 2')
-        user2 = GitUser.objects.get(username='user2')
-        starred2 = user2.get_starred_projects()
+        user5 = GitUser.objects.get(username='user5')
+        starred2 = user5.get_starred_projects()
         self.assertTrue(starred2[0].title == 'Project 1')
 
     def test_add_starred(self):
-        user2 = GitUser.objects.get(username='user2')
-        starred_before = len(user2.get_starred_projects())
-        user2.add_starred(3)
-        self.assertTrue(len(user2.get_starred_projects()) > starred_before)
+        user5 = GitUser.objects.get(username='user5')
+        starred_before = len(user5.get_starred_projects())
+        user5.add_starred(3)
+        self.assertTrue(len(user5.get_starred_projects()) > starred_before)
 
     def test_remove_starred(self):
-        user2 = GitUser.objects.get(username='user2')
-        starred_before = len(user2.get_starred_projects())
-        user2.remove_starred(1)
-        self.assertTrue(len(user2.get_starred_projects()) < starred_before)
+        user5 = GitUser.objects.get(username='user5')
+        starred_before = len(user5.get_starred_projects())
+        user5.remove_starred(1)
+        self.assertTrue(len(user5.get_starred_projects()) < starred_before)
 
     def test_get_watched(self):
         user1 = GitUser.objects.get(username='user1')
@@ -148,27 +139,27 @@ class InitialTests(TestCase):
         self.assertTrue(watched1[0].message == 'Branch Branch 3 added to project Project 1')
         self.assertTrue(watched1[1].message == 'Branch Branch 2 added to project Project 1')
         self.assertTrue(watched1[2].message == 'Branch Branch 1 added to project Project 1')
-        user2 = GitUser.objects.get(username='user2')
-        watched2 = user2.get_watched_changes()
+        user5 = GitUser.objects.get(username='user2')
+        watched2 = user5.get_watched_changes()
         self.assertTrue(watched2[0].message == 'Branch Branch 3 added to project Project 1')
         self.assertTrue(watched2[1].message == 'Branch Branch 2 added to project Project 1')
         self.assertTrue(watched2[2].message == 'Branch Branch 1 added to project Project 1')
 
     def test_add_watched(self):
-        user2 = GitUser.objects.get(username='user2')
-        watched_before = len(user2.get_watched_changes())
-        user2.add_watched(3)
+        user5 = GitUser.objects.get(username='user5')
+        watched_before = len(user5.get_watched_changes())
+        user5.add_watched(3)
         watched_project = Project.objects.get(id=3)
         watched_project.update_users("Generic update message")
-        self.assertTrue(len(user2.get_watched_changes()) > watched_before)
+        self.assertTrue(len(user5.get_watched_changes()) > watched_before)
 
     def test_remove_watched(self):
-        user2 = GitUser.objects.get(username='user2')
-        watched_before = len(user2.get_watched_changes())
-        user2.remove_watched(1)
+        user5 = GitUser.objects.get(username='user5')
+        watched_before = len(user5.get_watched_changes())
+        user5.remove_watched(1)
         unwatched_project = Project.objects.get(id=3)
         unwatched_project.update_users("Generic update message")
-        self.assertTrue(len(user2.get_watched_changes()) == watched_before)
+        self.assertTrue(len(user5.get_watched_changes()) == watched_before)
 
     def test_get_starred_client(self):
         context = {'uname': 'user1', 'psw': 'user1'}

@@ -31,6 +31,12 @@
         <a class="ms-5" href="{% url 'milestones' project.id 'OPEN' %}">
             <button class="btn btn-secondary">Milestones</button>
         </a>
+
+        {% if project.lead.username == user.username %}
+        <a class="ms-5" href="{% url 'contributors' project.id %}">
+            <button class="btn btn-info">Contributors</button>
+        </a>
+        {% endif %}
     </div>
     <br>
     <ul class="list-group">

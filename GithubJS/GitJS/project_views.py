@@ -1,7 +1,9 @@
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
+from django.urls import reverse
 
-from .models import Project, Branch, GitUser, StarredProject, WatchedProject
+from .models import Project, Branch, GitUser, StarredProject, WatchedProject, Contributor
 
 
 @login_required(login_url='login/')
@@ -107,3 +109,38 @@ def fork_project(request, project_id):
         branch_copy = Branch(id=new_id, name=branch.name, project=new_project)
         branch_copy.save()
     return redirect('index')
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_view', raise_exception=True)
+def contributors(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    if project.lead.username != request.user.username:
+        raise Http404()
+    return render(request, 'contributors.html', {'title': 'Contributors', 'contributors': project.get_contributors(),
+                                                 'form_action': 'add_contributor/'+str(project_id),
+                                                 'other_users': project.get_noncontributors()})
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_view', raise_exception=True)
+def add_contributor(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    if project.lead.username != request.user.username:
+        raise Http404()
+    new_contributor = request.POST['new_contributor'].strip()
+    new_id = Contributor.objects.all().order_by('-id')[0].id + 1
+    con = Contributor(id=new_id, username=new_contributor, project_id=project_id)
+    con.save()
+    return HttpResponseRedirect(reverse("single_project", args=(project.id,)))
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_view', raise_exception=True)
+def remove_contributor(request, project_id, username):
+    project = get_object_or_404(Project, id=project_id)
+    if project.lead.username != request.user.username:
+        raise Http404()
+    contributor = Contributor.objects.get(username=username, project_id=project_id)
+    contributor.delete()
+    return HttpResponseRedirect(reverse("single_project", args=(project.id,)))

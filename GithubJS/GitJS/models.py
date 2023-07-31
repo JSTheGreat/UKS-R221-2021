@@ -2,8 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from enum import Enum
-
 
 class GitUser(User):
 
@@ -56,6 +54,18 @@ class Project(models.Model):
         milestones = Milestone.objects.filter(project=self, state=state)
         return milestones
 
+    def get_contributors(self):
+        contributors = Contributor.objects.filter(project_id=self.id)
+        return contributors
+
+    def get_noncontributors(self):
+        ret = []
+        for con in GitUser.objects.all():
+            if self.lead.username != con.username and \
+             len(Contributor.objects.filter(username=con.username, project_id=self.id)) == 0:
+                ret.append(con.username)
+        return ret
+
 
 class StarredProject(models.Model):
     project_id = models.BigIntegerField()
@@ -65,6 +75,11 @@ class StarredProject(models.Model):
 class WatchedProject(models.Model):
     project_id = models.BigIntegerField()
     user_id = models.BigIntegerField()
+
+
+class Contributor(models.Model):
+    project_id = models.BigIntegerField()
+    username = models.CharField(max_length=100)
 
 
 class ProjectUpdate(models.Model):

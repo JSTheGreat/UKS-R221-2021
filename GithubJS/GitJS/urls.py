@@ -29,5 +29,9 @@ urlpatterns = [
     path('delete_milestone/<int:milestone_id>', milestone_views.delete_milestone, name='delete_milestone'),
     path('<int:branch_id>/add_file', file_views.add_file, name='add_file'),
     path('edit_file/<int:file_id>', file_views.edit_file, name='edit_file'),
-    path('delete_file/<int:file_id>', file_views.delete_file, name='delete_file')
+    path('delete_file/<int:file_id>', file_views.delete_file, name='delete_file'),
+    path('contributors/<int:project_id>', project_views.contributors, name='contributors'),
+    path('add_contributor/<int:project_id>', project_views.add_contributor, name='add_contributor'),
+    path('remove_contributor/<int:project_id>/<str:username>', project_views.remove_contributor,
+         name='remove_contributor')
 ]
