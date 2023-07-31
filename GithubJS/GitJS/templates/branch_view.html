@@ -6,8 +6,12 @@
     <ul class="list-group">
         {% for file in branch.file_set.all %}
         <li class="list-group-item">
-            <a>
-                {{file.title}}
+            {{file.title}}
+            <a href="{% url 'edit_file' file.id %}">
+                <button class="btn btn-warning">Edit</button>
+            </a>
+            <a href="{% url 'delete_file' file.id %}">
+                <button class="btn btn-danger">Delete</button>
             </a>
         </li>
         {% endfor %}

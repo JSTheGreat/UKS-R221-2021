@@ -41,3 +41,43 @@ def add_file(request, branch_id):
             f.save()
             branch.project.update_users('File ' + f.title + ' added to ' + branch.project.title + ' on ' + branch.name)
             return HttpResponseRedirect(reverse("single_branch", args=(branch_id,)))
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_edit', raise_exception=True)
+def edit_file(request, file_id):
+    file = get_object_or_404(File, id=file_id)
+    if request.method == 'GET':
+        return render(request, "file_edit.html", {"branch": file.branch, "title": "Edit file", "file_title": file.title,
+                                                  "file_text": file.text, "form_action": "edit_file/" + str(file_id)})
+    else:
+        file_title = request.POST['new_title'].strip()
+        file_text = request.POST['new_text'].strip()
+        if file_title == '':
+            error_message = "File title can't be empty"
+            return render(request, "file_edit.html", {"branch": file.branch, "title": "Error!",
+                                                      "file_title": file.title, "file_text": file.text,
+                                                      "error_message": error_message,
+                                                      "form_action": "edit_file/" + str(file_id)})
+        existing_files = File.objects.filter(title=file_title, branch=file.branch)
+        if len(existing_files) > 0:
+            if existing_files[0].id != file_id:
+                error_message = "File with given title already exists"
+                return render(request, "file_edit.html", {"branch": file.branch, "title": "Error!",
+                                                          "file_title": file.title, "file_text": file.text,
+                                                          "error_message": error_message,
+                                                          "form_action": "edit_file/" + str(file_id)})
+        file.title = file_title
+        file.text = file_text
+        file.save()
+        branch = file.branch
+        branch.project.update_users('File ' + file.title + ' changed in ' + branch.name + ' on ' + branch.project.title)
+        return HttpResponseRedirect(reverse("single_branch", args=(file.branch.id,)))
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_edit', raise_exception=True)
+def delete_file(request, file_id):
+    file = get_object_or_404(File, id=file_id)
+    file.delete()
+    return HttpResponseRedirect(reverse("single_branch", args=(file.branch.id,)))
