@@ -1,11 +1,11 @@
 from django.urls import path
 
-from . import views, project_views, branch_views, milestone_views
+from . import views, project_views, branch_views, milestone_views, file_views
 
 urlpatterns = [
     path("", views.index, name="index"),
     path("<int:project_id>/", project_views.single_project, name="single_project"),
-    path("<int:project_id>/branch/<int:branch_id>", views.single_branch, name="single_branch"),
+    path("branch/<int:branch_id>", file_views.single_branch, name="single_branch"),
     path("<int:project_id>/add_branch/", branch_views.add_branch, name="add_branch"),
     path("delete_branch/<int:branch_id>", branch_views.delete_branch, name="delete_branch"),
     path("edit_branch/<int:branch_id>", branch_views.edit_branch, name="edit_branch"),
@@ -26,5 +26,6 @@ urlpatterns = [
     path('milestones/<int:project_id>/<str:state>', milestone_views.get_milestones, name='milestones'),
     path('<int:project_id>/add_milestone', milestone_views.add_milestone, name='add_milestone'),
     path('edit_milestone/<int:milestone_id>', milestone_views.edit_milestone, name='edit_milestone'),
-    path('delete_milestone/<int:milestone_id>', milestone_views.delete_milestone, name='delete_milestone')
+    path('delete_milestone/<int:milestone_id>', milestone_views.delete_milestone, name='delete_milestone'),
+    path('<int:branch_id>/add_file', file_views.add_file, name='add_file')
 ]

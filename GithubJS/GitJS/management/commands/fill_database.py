@@ -6,7 +6,7 @@ from django.utils import timezone
 import datetime
 
 from ...models import Project, Branch, GitUser, StarredProject,\
-    WatchedProject, ProjectUpdate, Milestone
+    WatchedProject, ProjectUpdate, Milestone, File
 
 
 class Command(BaseCommand):
@@ -143,8 +143,58 @@ class Command(BaseCommand):
         m5.due_date = timezone.now() + datetime.timedelta(days=4)
         m5.save()
 
+    def _add_files(self):
+        f1 = File(id=1, title='File 1', text='Generic text for file 1')
+        f1.branch = Branch.objects.get(id=1)
+        f1.save()
+
+        f2 = File(id=2, title='File 2', text='Generic text for file 2')
+        f2.branch = Branch.objects.get(id=1)
+        f2.save()
+
+        f3 = File(id=3, title='File 1', text='Generic text for file 1')
+        f3.branch = Branch.objects.get(id=2)
+        f3.save()
+
+        f4 = File(id=4, title='File 2', text='Generic text for file 2')
+        f4.branch = Branch.objects.get(id=3)
+        f4.save()
+
+        f5 = File(id=5, title='File 3', text='Generic text for file 3')
+        f5.branch = Branch.objects.get(id=4)
+        f5.save()
+
+        f6 = File(id=6, title='File 4', text='Generic text for file 4')
+        f6.branch = Branch.objects.get(id=5)
+        f6.save()
+
+        f7 = File(id=7, title='File 4', text='Generic text for file 4')
+        f7.branch = Branch.objects.get(id=6)
+        f7.save()
+
+        f8 = File(id=8, title='File 5', text='Generic text for file 5')
+        f8.branch = Branch.objects.get(id=6)
+        f8.save()
+
+        f9 = File(id=9, title='File 6', text='Generic text for file 6')
+        f9.branch = Branch.objects.get(id=1)
+        f9.save()
+
+        f10 = File(id=10, title='File 6', text='Generic text for file 6')
+        f10.branch = Branch.objects.get(id=3)
+        f10.save()
+
+        f11 = File(id=11, title='File 7', text='Generic text for file 7')
+        f11.branch = Branch.objects.get(id=5)
+        f11.save()
+
+        f12 = File(id=12, title='File 8', text='Generic text for file 8')
+        f12.branch = Branch.objects.get(id=6)
+        f12.save()
+
     def handle(self, *args, **options):
         self._add_users()
         self._add_projects()
         self._add_branches()
         self._add_milestones()
+        self._add_files()

@@ -85,3 +85,9 @@ class Milestone(models.Model):
     due_date = models.DateTimeField("due date")
     state = models.CharField(max_length=7)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+
+class File(models.Model):
+    title = models.CharField(max_length=100)
+    text = models.CharField(max_length=200)
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)

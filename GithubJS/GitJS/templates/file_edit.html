@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+    <form action="/{{form_action}}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        {% if error_message %}<p class="error"><strong>{{ error_message }}</strong></p>{% endif %}
+        <label for="new_title">Branch name</label><br>
+        <input type="text" name="new_title" id="new_title" class="form-control" value="{{file_title}}" required/>
+        <br><br>
+        <label for="new_text">Branch name</label><br>
+        <textarea name="new_text" id="new_text" class="form-control">{{file_text}}</textarea>
+    </fieldset>
+        <br>
+    {% if file_title == '' %}
+        <input type="submit" value="Add" class="btn btn-success">
+    {% else %}
+        <input type="submit" value="Change" class="btn btn-warning">
+    {% endif %}
+    </form>
+{% endblock %}

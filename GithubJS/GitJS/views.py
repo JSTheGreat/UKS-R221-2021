@@ -24,14 +24,6 @@ def cached_initial(request):
     return render(request, "cache_test.html", {"title": "Redis test"})
 
 
-def single_branch(request, project_id, branch_id):
-    project = get_object_or_404(Project, id=project_id)
-    branch = get_object_or_404(Branch, id=branch_id)
-    if branch.project.id != project_id:
-        raise Http404("Branch doesn't match the project")
-    return render(request, 'branch_view.html', {"name": branch.name, "project": project, "title": "Single branch"})
-
-
 def git_login(request):
     if request.user.is_authenticated:
         return redirect('index')

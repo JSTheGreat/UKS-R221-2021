@@ -1,5 +1,20 @@
-{% extends "project_view.html" %}
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ branch.name }}</h1>
+    <br>
 
-{% block proba %}
-    <br><br><p>This is description for branch {{name}}</p>
+    <ul class="list-group">
+        {% for file in branch.file_set.all %}
+        <li class="list-group-item">
+            <a>
+                {{file.title}}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <br>
+    <a href="{% url 'add_file' branch.id %}">
+        <button class="btn btn-success">Add file</button>
+    </a>
 {% endblock %}
