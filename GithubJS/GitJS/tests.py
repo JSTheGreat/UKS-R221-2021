@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .management.commands.fill_database import Command
-from .models import Project, GitUser, Branch, Milestone
+from .models import Project, GitUser, Branch, Milestone, File
 
 
 class InitialTests(TestCase):
@@ -383,3 +383,70 @@ class InitialTests(TestCase):
         non_contributors_size = len(GitUser.objects.all()) - len(project2.get_contributors()) - 1
         self.assertEqual(non_contributors_size, len(project2.get_noncontributors()))
         self.assertTrue('user6' not in project2.get_noncontributors())
+
+    def test_add_file_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': 'New title', 'new_text': 'New text for a file'}
+        branch = Branch.objects.get(id=2)
+        size_before = len(File.objects.filter(branch=branch))
+        self.client.post(reverse('add_file', args=(2,)), context, follow=True)
+        self.assertTrue(len(File.objects.filter(branch=branch)) > size_before)
+
+        context = {'new_title': 'File 2', 'new_text': 'New text for a file'}
+        branch = Branch.objects.get(id=2)
+        size_before = len(File.objects.filter(branch=branch))
+        self.client.post(reverse('add_file', args=(2,)), context, follow=True)
+        self.assertTrue(len(File.objects.filter(branch=branch)) > size_before)
+
+    def test_add_file_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  ', 'new_text': 'New text for a file'}
+        response = self.client.post(reverse('add_file', args=(2,)), context, follow=True)
+        self.assertEqual('File title can\'t be empty', response.context['error_message'])
+
+        context = {'new_title': 'File 1', 'new_text': 'New text for a file'}
+        response = self.client.post(reverse('add_file', args=(2,)), context, follow=True)
+        self.assertEqual('File with given title already exists', response.context['error_message'])
+
+    def test_edit_file_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': 'New title', 'new_text': 'New text for a file'}
+        file_before = File.objects.get(id=3)
+        self.client.post(reverse('edit_file', args=(3,)), context, follow=True)
+        file_after = File.objects.get(id=3)
+        self.assertNotEqual(file_before.title, file_after.title)
+        self.assertNotEqual(file_before.text, file_after.text)
+
+        context = {'new_title': 'File 2', 'new_text': 'Generic text for file 2'}
+        file_before = File.objects.get(id=3)
+        self.client.post(reverse('edit_file', args=(3,)), context, follow=True)
+        file_after = File.objects.get(id=3)
+        self.assertNotEqual(file_before.title, file_after.title)
+        self.assertNotEqual(file_before.text, file_after.text)
+
+    def test_edit_file_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  ', 'new_text': 'New text for a file'}
+        response = self.client.post(reverse('edit_file', args=(1,)), context, follow=True)
+        self.assertEqual('File title can\'t be empty', response.context['error_message'])
+
+        context = {'new_title': 'File 6', 'new_text': 'New text for a file'}
+        response = self.client.post(reverse('edit_file', args=(1,)), context, follow=True)
+        self.assertEqual('File title can\'t be empty', response.context['error_message'])
+
+    def test_delete_file(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        branch = Branch.objects.get(id=1)
+        size_before = len(File.objects.filter(branch=branch))
+        self.client.post(reverse('delete_file', args=(2,)), context, follow=True)
+        self.assertTrue(len(File.objects.filter(branch=branch)) < size_before)
