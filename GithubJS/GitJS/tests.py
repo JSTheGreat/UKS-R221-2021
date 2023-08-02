@@ -139,7 +139,7 @@ class InitialTests(TestCase):
         self.assertTrue(watched1[0].message == 'Branch Branch 3 added to project Project 1')
         self.assertTrue(watched1[1].message == 'Branch Branch 2 added to project Project 1')
         self.assertTrue(watched1[2].message == 'Branch Branch 1 added to project Project 1')
-        user5 = GitUser.objects.get(username='user2')
+        user5 = GitUser.objects.get(username='user5')
         watched2 = user5.get_watched_changes()
         self.assertTrue(watched2[0].message == 'Branch Branch 3 added to project Project 1')
         self.assertTrue(watched2[1].message == 'Branch Branch 2 added to project Project 1')
@@ -358,3 +358,28 @@ class InitialTests(TestCase):
 
         response = self.client.post(reverse('delete_milestone', args=(1,)), context, follow=True)
         self.assertEqual(response.status_code, 403)
+
+    def test_get_contributors(self):
+        project1 = Project.objects.get(id=1)
+        self.assertEqual(len(project1.get_contributors()), 2)
+        self.assertEqual(project1.get_contributors()[0].username, 'user4')
+        self.assertEqual(project1.get_contributors()[1].username, 'user5')
+
+        project2 = Project.objects.get(id=2)
+        self.assertEqual(len(project2.get_contributors()), 1)
+        self.assertEqual(project2.get_contributors()[0].username, 'user6')
+
+        project3 = Project.objects.get(id=3)
+        self.assertEqual(len(project3.get_contributors()), 0)
+
+    def test_get_noncontributors(self):
+        project1 = Project.objects.get(id=1)
+        non_contributors_size = len(GitUser.objects.all()) - len(project1.get_noncontributors()) - 1
+        self.assertEqual(non_contributors_size, 3)
+        self.assertTrue('user4' not in project1.get_noncontributors())
+        self.assertTrue('user5' not in project1.get_noncontributors())
+
+        project2 = Project.objects.get(id=1)
+        non_contributors_size = len(GitUser.objects.all()) - len(project2.get_noncontributors()) - 1
+        self.assertEqual(non_contributors_size, 4)
+        self.assertTrue('user6' not in project2.get_noncontributors())
