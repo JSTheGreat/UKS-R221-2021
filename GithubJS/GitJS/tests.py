@@ -464,7 +464,7 @@ class InitialTests(TestCase):
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
         response = self.client.post(reverse('contributors', args=(1,)), context, follow=True)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
 
     def test_add_contributor_successful(self):
         context = {'uname': 'user1', 'psw': 'user1'}
@@ -483,7 +483,7 @@ class InitialTests(TestCase):
 
         context = {'new_contributor': 'user6'}
         response = self.client.post(reverse('add_contributor', args=(1,)), context, follow=True)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
 
     def test_remove_contributor_successful(self):
         context = {'uname': 'user1', 'psw': 'user1'}
@@ -500,4 +500,4 @@ class InitialTests(TestCase):
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
         response = self.client.post(reverse('remove_contributor', args=(1, 'user4',)), context, follow=True)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
