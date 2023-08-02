@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.urls import reverse
 
-from .models import Project, Branch, GitUser, StarredProject, WatchedProject
+from .models import Project, Branch
 
 
 @login_required(login_url='login/')

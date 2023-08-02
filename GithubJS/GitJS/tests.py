@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .management.commands.fill_database import Command
-from .models import Project, GitUser, Branch, Milestone
+from .models import Project, GitUser, Branch, Milestone, File
 
 
 class InitialTests(TestCase):
@@ -42,15 +42,6 @@ class InitialTests(TestCase):
         response = self.client.get('http://localhost:8000/99/')
         self.assertEqual(response.status_code, 404)
 
-    def test_find_non_matching_branch(self):
-        context = {'uname': 'user1', 'psw': 'user1'}
-        self.client.post('http://localhost:8000/login/', context, follow=True)
-
-        response = self.client.get('http://localhost:8000/1/branch/2')
-        self.assertEqual(response.status_code, 200)
-        response = self.client.get('http://localhost:8000/1/branch/5')
-        self.assertEqual(response.status_code, 404)
-
     def test_add_branch_unsuccessful(self):
         context = {'uname': 'user1', 'psw': 'user1'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
@@ -81,14 +72,14 @@ class InitialTests(TestCase):
         self.assertTrue(response.context['login_has_error'])
 
     def test_register_successful(self):
-        context = {'uname': 'user4', 'mail': 'sth@mail.com',
-                   'psw': 'user4', 'psw_repeat': 'user4', 'role': 'Developer'}
+        context = {'uname': 'user7', 'mail': 'sth@mail.com',
+                   'psw': 'user7', 'psw_repeat': 'user7', 'role': 'Developer'}
         response = self.client.post('http://localhost:8000/register/', context, follow=True)
         self.assertRedirects(response, '/')
 
     def test_register_unsuccessful(self):
-        context = {'uname': 'user4', 'mail': 'sth@mail.com',
-                   'psw': 'user4', 'psw_repeat': 'not_a_repeat', 'role': 'Developer'}
+        context = {'uname': 'user7', 'mail': 'sth@mail.com',
+                   'psw': 'user7', 'psw_repeat': 'not_a_repeat', 'role': 'Developer'}
         response = self.client.post('http://localhost:8000/register/', context, follow=True)
         self.assertEqual('Passwords don\'t match!', response.context['error_message'])
 
@@ -126,21 +117,21 @@ class InitialTests(TestCase):
         user1 = GitUser.objects.get(username='user1')
         starred1 = user1.get_starred_projects()
         self.assertTrue(starred1[0].title == 'Project 2')
-        user2 = GitUser.objects.get(username='user2')
-        starred2 = user2.get_starred_projects()
+        user5 = GitUser.objects.get(username='user5')
+        starred2 = user5.get_starred_projects()
         self.assertTrue(starred2[0].title == 'Project 1')
 
     def test_add_starred(self):
-        user2 = GitUser.objects.get(username='user2')
-        starred_before = len(user2.get_starred_projects())
-        user2.add_starred(3)
-        self.assertTrue(len(user2.get_starred_projects()) > starred_before)
+        user5 = GitUser.objects.get(username='user5')
+        starred_before = len(user5.get_starred_projects())
+        user5.add_starred(3)
+        self.assertTrue(len(user5.get_starred_projects()) > starred_before)
 
     def test_remove_starred(self):
-        user2 = GitUser.objects.get(username='user2')
-        starred_before = len(user2.get_starred_projects())
-        user2.remove_starred(1)
-        self.assertTrue(len(user2.get_starred_projects()) < starred_before)
+        user5 = GitUser.objects.get(username='user5')
+        starred_before = len(user5.get_starred_projects())
+        user5.remove_starred(1)
+        self.assertTrue(len(user5.get_starred_projects()) < starred_before)
 
     def test_get_watched(self):
         user1 = GitUser.objects.get(username='user1')
@@ -148,27 +139,27 @@ class InitialTests(TestCase):
         self.assertTrue(watched1[0].message == 'Branch Branch 3 added to project Project 1')
         self.assertTrue(watched1[1].message == 'Branch Branch 2 added to project Project 1')
         self.assertTrue(watched1[2].message == 'Branch Branch 1 added to project Project 1')
-        user2 = GitUser.objects.get(username='user2')
-        watched2 = user2.get_watched_changes()
+        user5 = GitUser.objects.get(username='user5')
+        watched2 = user5.get_watched_changes()
         self.assertTrue(watched2[0].message == 'Branch Branch 3 added to project Project 1')
         self.assertTrue(watched2[1].message == 'Branch Branch 2 added to project Project 1')
         self.assertTrue(watched2[2].message == 'Branch Branch 1 added to project Project 1')
 
     def test_add_watched(self):
-        user2 = GitUser.objects.get(username='user2')
-        watched_before = len(user2.get_watched_changes())
-        user2.add_watched(3)
+        user5 = GitUser.objects.get(username='user5')
+        watched_before = len(user5.get_watched_changes())
+        user5.add_watched(3)
         watched_project = Project.objects.get(id=3)
         watched_project.update_users("Generic update message")
-        self.assertTrue(len(user2.get_watched_changes()) > watched_before)
+        self.assertTrue(len(user5.get_watched_changes()) > watched_before)
 
     def test_remove_watched(self):
-        user2 = GitUser.objects.get(username='user2')
-        watched_before = len(user2.get_watched_changes())
-        user2.remove_watched(1)
+        user5 = GitUser.objects.get(username='user5')
+        watched_before = len(user5.get_watched_changes())
+        user5.remove_watched(1)
         unwatched_project = Project.objects.get(id=3)
         unwatched_project.update_users("Generic update message")
-        self.assertTrue(len(user2.get_watched_changes()) == watched_before)
+        self.assertTrue(len(user5.get_watched_changes()) == watched_before)
 
     def test_get_starred_client(self):
         context = {'uname': 'user1', 'psw': 'user1'}
@@ -367,3 +358,146 @@ class InitialTests(TestCase):
 
         response = self.client.post(reverse('delete_milestone', args=(1,)), context, follow=True)
         self.assertEqual(response.status_code, 403)
+
+    def test_get_contributors(self):
+        project1 = Project.objects.get(id=1)
+        self.assertEqual(len(project1.get_contributors()), 2)
+        self.assertEqual(project1.get_contributors()[0].username, 'user4')
+        self.assertEqual(project1.get_contributors()[1].username, 'user5')
+
+        project2 = Project.objects.get(id=2)
+        self.assertEqual(len(project2.get_contributors()), 1)
+        self.assertEqual(project2.get_contributors()[0].username, 'user6')
+
+        project3 = Project.objects.get(id=3)
+        self.assertEqual(len(project3.get_contributors()), 0)
+
+    def test_get_noncontributors(self):
+        project1 = Project.objects.get(id=1)
+        non_contributors_size = len(GitUser.objects.all()) - len(project1.get_contributors()) - 1
+        self.assertEqual(non_contributors_size, len(project1.get_noncontributors()))
+        self.assertTrue('user4' not in project1.get_noncontributors())
+        self.assertTrue('user5' not in project1.get_noncontributors())
+
+        project2 = Project.objects.get(id=2)
+        non_contributors_size = len(GitUser.objects.all()) - len(project2.get_contributors()) - 1
+        self.assertEqual(non_contributors_size, len(project2.get_noncontributors()))
+        self.assertTrue('user6' not in project2.get_noncontributors())
+
+    def test_add_file_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': 'New title', 'new_text': 'New text for a file'}
+        branch = Branch.objects.get(id=2)
+        size_before = len(File.objects.filter(branch=branch))
+        self.client.post(reverse('add_file', args=(2,)), context, follow=True)
+        self.assertTrue(len(File.objects.filter(branch=branch)) > size_before)
+
+        context = {'new_title': 'File 2', 'new_text': 'New text for a file'}
+        branch = Branch.objects.get(id=2)
+        size_before = len(File.objects.filter(branch=branch))
+        self.client.post(reverse('add_file', args=(2,)), context, follow=True)
+        self.assertTrue(len(File.objects.filter(branch=branch)) > size_before)
+
+    def test_add_file_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  ', 'new_text': 'New text for a file'}
+        response = self.client.post(reverse('add_file', args=(2,)), context, follow=True)
+        self.assertEqual('File title can\'t be empty', response.context['error_message'])
+
+        context = {'new_title': 'File 1', 'new_text': 'New text for a file'}
+        response = self.client.post(reverse('add_file', args=(2,)), context, follow=True)
+        self.assertEqual('File with given title already exists', response.context['error_message'])
+
+    def test_edit_file_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': 'New title', 'new_text': 'New text for a file'}
+        file_before = File.objects.get(id=3)
+        self.client.post(reverse('edit_file', args=(3,)), context, follow=True)
+        file_after = File.objects.get(id=3)
+        self.assertNotEqual(file_before.title, file_after.title)
+        self.assertNotEqual(file_before.text, file_after.text)
+
+        context = {'new_title': 'File 2', 'new_text': 'Generic text for file 2'}
+        file_before = File.objects.get(id=3)
+        self.client.post(reverse('edit_file', args=(3,)), context, follow=True)
+        file_after = File.objects.get(id=3)
+        self.assertNotEqual(file_before.title, file_after.title)
+        self.assertNotEqual(file_before.text, file_after.text)
+
+    def test_edit_file_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  ', 'new_text': 'New text for a file'}
+        response = self.client.post(reverse('edit_file', args=(1,)), context, follow=True)
+        self.assertEqual('File title can\'t be empty', response.context['error_message'])
+
+        context = {'new_title': 'File 6', 'new_text': 'New text for a file'}
+        response = self.client.post(reverse('edit_file', args=(1,)), context, follow=True)
+        self.assertEqual('File with given title already exists', response.context['error_message'])
+
+    def test_delete_file(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        branch = Branch.objects.get(id=1)
+        size_before = len(File.objects.filter(branch=branch))
+        self.client.post(reverse('delete_file', args=(2,)), context, follow=True)
+        self.assertTrue(len(File.objects.filter(branch=branch)) < size_before)
+
+    def test_contributors_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.post(reverse('contributors', args=(1,)), context, follow=True)
+        self.assertEqual(len(response.context['contributors']), 2)
+        self.assertEqual(len(response.context['other_users']), 4)
+
+    def test_contributors_unsuccessful(self):
+        context = {'uname': 'user2', 'psw': 'user2'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.post(reverse('contributors', args=(1,)), context, follow=True)
+        self.assertEqual(response.status_code, 404)
+
+    def test_add_contributor_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project = Project.objects.get(id=1)
+        size_before = len(project.get_contributors())
+        context = {'new_contributor': 'user2'}
+        self.client.post(reverse('add_contributor', args=(1,)), context, follow=True)
+        project = Project.objects.get(id=1)
+        self.assertTrue(len(project.get_contributors()) > size_before)
+
+    def test_add_contributor_unsuccessful(self):
+        context = {'uname': 'user2', 'psw': 'user2'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_contributor': 'user6'}
+        response = self.client.post(reverse('add_contributor', args=(1,)), context, follow=True)
+        self.assertEqual(response.status_code, 404)
+
+    def test_remove_contributor_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project = Project.objects.get(id=1)
+        size_before = len(project.get_contributors())
+        self.client.post(reverse('remove_contributor', args=(1, 'user4', )), context, follow=True)
+        project = Project.objects.get(id=1)
+        self.assertTrue(len(project.get_contributors()) < size_before)
+
+    def test_remove_contributor_unsuccessful(self):
+        context = {'uname': 'user2', 'psw': 'user2'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.post(reverse('remove_contributor', args=(1, 'user4',)), context, follow=True)
+        self.assertEqual(response.status_code, 404)

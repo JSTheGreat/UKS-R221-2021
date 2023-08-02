@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>{{ project.title }}</h1>
-    {% block proba %}
     <div>
         {% if starred %}
         <a href="{% url 'remove_starred' project.id %}">
@@ -32,12 +31,18 @@
         <a class="ms-5" href="{% url 'milestones' project.id 'OPEN' %}">
             <button class="btn btn-secondary">Milestones</button>
         </a>
+
+        {% if project.lead.username == user.username %}
+        <a class="ms-5" href="{% url 'contributors' project.id %}">
+            <button class="btn btn-info">Contributors</button>
+        </a>
+        {% endif %}
     </div>
     <br>
     <ul class="list-group">
     {% for branch in project.branch_set.all %}
         <li class="list-group-item">
-            <a href="{% url 'single_branch' project.id branch.id %}">{{ branch.name }}</a>
+            <a href="{% url 'single_branch' branch.id %}">{{ branch.name }}</a>
             {% if not can_fork %}
                 <a href="{% url 'edit_branch' branch.id %}">
                     <button class="btn btn-warning">Edit</button>
@@ -57,5 +62,4 @@
         </a>
     {% endif %}
 
-    {% endblock %}
 {% endblock %}
