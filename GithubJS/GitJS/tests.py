@@ -374,12 +374,12 @@ class InitialTests(TestCase):
 
     def test_get_noncontributors(self):
         project1 = Project.objects.get(id=1)
-        non_contributors_size = len(GitUser.objects.all()) - len(project1.get_noncontributors()) - 1
-        self.assertEqual(non_contributors_size, 3)
+        non_contributors_size = len(GitUser.objects.all()) - len(project1.get_contributors()) - 1
+        self.assertEqual(non_contributors_size, len(project1.get_noncontributors()))
         self.assertTrue('user4' not in project1.get_noncontributors())
         self.assertTrue('user5' not in project1.get_noncontributors())
 
-        project2 = Project.objects.get(id=1)
-        non_contributors_size = len(GitUser.objects.all()) - len(project2.get_noncontributors()) - 1
-        self.assertEqual(non_contributors_size, 4)
+        project2 = Project.objects.get(id=2)
+        non_contributors_size = len(GitUser.objects.all()) - len(project2.get_contributors()) - 1
+        self.assertEqual(non_contributors_size, len(project2.get_noncontributors()))
         self.assertTrue('user6' not in project2.get_noncontributors())
