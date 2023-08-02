@@ -95,13 +95,9 @@ def fork_project(request, project_id):
     while needs_new_title:
         try:
             possible_existing = Project.objects.get(lead=user, title=new_title)
-            print("Existing project found!")
             new_title += '_'
-            print("New title for existing project: " + new_title)
         except:
-            print("No project found!")
             new_project.title = new_title
-            print("new title for forked project: " + new_title)
             needs_new_title = False
     new_project.save()
     for branch in Branch.objects.filter(project=for_fork):

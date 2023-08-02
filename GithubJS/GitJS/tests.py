@@ -440,7 +440,7 @@ class InitialTests(TestCase):
 
         context = {'new_title': 'File 6', 'new_text': 'New text for a file'}
         response = self.client.post(reverse('edit_file', args=(1,)), context, follow=True)
-        self.assertEqual('File title can\'t be empty', response.context['error_message'])
+        self.assertEqual('File with given title already exists', response.context['error_message'])
 
     def test_delete_file(self):
         context = {'uname': 'user1', 'psw': 'user1'}
@@ -450,3 +450,54 @@ class InitialTests(TestCase):
         size_before = len(File.objects.filter(branch=branch))
         self.client.post(reverse('delete_file', args=(2,)), context, follow=True)
         self.assertTrue(len(File.objects.filter(branch=branch)) < size_before)
+
+    def test_contributors_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.post(reverse('contributors', args=(1,)), context, follow=True)
+        self.assertEqual(len(response.context['contributors']), 2)
+        self.assertEqual(len(response.context['other_users']), 4)
+
+    def test_contributors_unsuccessful(self):
+        context = {'uname': 'user2', 'psw': 'user2'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.post(reverse('contributors', args=(1,)), context, follow=True)
+        self.assertEqual(response.status_code, 403)
+
+    def test_add_contributor_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project = Project.objects.get(id=1)
+        size_before = len(project.get_contributors())
+        context = {'new_contributor': 'user2'}
+        self.client.post(reverse('add_contributor', args=(1,)), context, follow=True)
+        project = Project.objects.get(id=1)
+        self.assertTrue(len(project.get_contributors()) > size_before)
+
+    def test_add_contributor_unsuccessful(self):
+        context = {'uname': 'user2', 'psw': 'user2'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_contributor': 'user6'}
+        response = self.client.post(reverse('add_contributor', args=(1,)), context, follow=True)
+        self.assertEqual(response.status_code, 403)
+
+    def test_remove_contributor_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project = Project.objects.get(id=1)
+        size_before = len(project.get_contributors())
+        self.client.post(reverse('remove_contributor', args=(1, 'user4', )), context, follow=True)
+        project = Project.objects.get(id=1)
+        self.assertTrue(len(project.get_contributors()) < size_before)
+
+    def test_remove_contributor_unsuccessful(self):
+        context = {'uname': 'user2', 'psw': 'user2'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        response = self.client.post(reverse('remove_contributor', args=(1, 'user4',)), context, follow=True)
+        self.assertEqual(response.status_code, 403)
