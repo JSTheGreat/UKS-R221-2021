@@ -62,4 +62,25 @@
         </a>
     {% endif %}
 
+    <br><br>
+    <form action="{% url 'add_comment' project.id %}" method="post">
+    {% csrf_token %}
+    {% if error_message %}<p class="error"><strong>{{ error_message }}</strong></p>{% endif %}
+    <div class="new_comment">
+        <input type="text" class="form-control" name="new_comment" id="new_comment" required>
+        <button type="submit" class="btn btn-primary">Add comment</button>
+    </div>
+    </form>
+    {% for comment in comments %}
+    <div class="list-group">
+        <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+              <h5 class="mb-1">{{comment.user.username}}</h5>
+              <small>{{comment.last_update}}</small>
+            </div>
+            <p class="mb-1">{{comment.text}}</p>
+        </a>
+    </div>
+    {% endfor %}
+
 {% endblock %}

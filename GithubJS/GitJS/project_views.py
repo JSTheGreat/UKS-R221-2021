@@ -17,18 +17,22 @@ def single_project(request, project_id):
         try:
             watched = WatchedProject.objects.get(project_id=project_id, user_id=request.user.pk)
             return render(request, 'project_view.html', {'title': project.title, "project": project,
-                                                         "starred": True, "watched": True, "can_fork": can_fork})
+                                                         "starred": True, "watched": True, "can_fork": can_fork,
+                                                         'comments': project.get_comments()})
         except:
             return render(request, 'project_view.html', {'title': project.title, "project": project,
-                                                         "starred": True, "watched": False, "can_fork": can_fork})
+                                                         "starred": True, "watched": False, "can_fork": can_fork,
+                                                         'comments': project.get_comments()})
     except:
         try:
             watched = WatchedProject.objects.get(project_id=project_id, user_id=request.user.pk)
             return render(request, 'project_view.html', {'title': project.title, "project": project,
-                                                         "starred": False, "watched": True, "can_fork": can_fork})
+                                                         "starred": False, "watched": True, "can_fork": can_fork,
+                                                         'comments': project.get_comments()})
         except:
             return render(request, 'project_view.html', {'title': project.title, "project": project,
-                                                         "starred": False, "watched": False, "can_fork": can_fork})
+                                                         "starred": False, "watched": False, "can_fork": can_fork,
+                                                         'comments': project.get_comments()})
 
 
 @login_required(login_url='login/')

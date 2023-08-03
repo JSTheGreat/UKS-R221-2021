@@ -6,7 +6,7 @@ from django.utils import timezone
 import datetime
 
 from ...models import Project, Branch, GitUser, StarredProject,\
-    WatchedProject, ProjectUpdate, Milestone, File, Contributor
+    WatchedProject, ProjectUpdate, Milestone, File, Contributor, Comment
 
 
 class Command(BaseCommand):
@@ -208,9 +208,47 @@ class Command(BaseCommand):
         f12.branch = Branch.objects.get(id=6)
         f12.save()
 
+    def _add_comments(self):
+        c1 = Comment(id=1, text='Text for comment no 1')
+        c1.last_update = timezone.now() - datetime.timedelta(days=1)
+        c1.user = GitUser.objects.get_by_natural_key("user4")
+        c1.project = Project.objects.get(id=1)
+        c1.save()
+
+        c2 = Comment(id=2, text='Text for comment no 2')
+        c2.last_update = timezone.now() - datetime.timedelta(days=2)
+        c2.user = GitUser.objects.get_by_natural_key("user6")
+        c2.project = Project.objects.get(id=1)
+        c2.save()
+
+        c3 = Comment(id=3, text='Text for comment no 3')
+        c3.last_update = timezone.now() - datetime.timedelta(days=3)
+        c3.user = GitUser.objects.get_by_natural_key("user1")
+        c3.project = Project.objects.get(id=1)
+        c3.save()
+
+        c4 = Comment(id=4, text='Text for comment no 4')
+        c4.last_update = timezone.now() - datetime.timedelta(days=3)
+        c4.user = GitUser.objects.get_by_natural_key("user4")
+        c4.project = Project.objects.get(id=2)
+        c4.save()
+
+        c5 = Comment(id=5, text='Text for comment no 5')
+        c5.last_update = timezone.now() - datetime.timedelta(days=1)
+        c5.user = GitUser.objects.get_by_natural_key("user6")
+        c5.project = Project.objects.get(id=2)
+        c5.save()
+
+        c6 = Comment(id=6, text='Text for comment no 6')
+        c6.last_update = timezone.now() - datetime.timedelta(days=4)
+        c6.user = GitUser.objects.get_by_natural_key("user2")
+        c6.project = Project.objects.get(id=3)
+        c6.save()
+
     def handle(self, *args, **options):
         self._add_users()
         self._add_projects()
         self._add_branches()
         self._add_milestones()
         self._add_files()
+        self._add_comments()

@@ -66,6 +66,9 @@ class Project(models.Model):
                 ret.append(con.username)
         return ret
 
+    def get_comments(self):
+        return Comment.objects.filter(project=self).order_by('-last_update')
+
 
 class StarredProject(models.Model):
     project_id = models.BigIntegerField()
@@ -106,3 +109,10 @@ class File(models.Model):
     title = models.CharField(max_length=100)
     text = models.CharField(max_length=200)
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+
+
+class Comment(models.Model):
+    text = models.CharField(max_length=200)
+    last_update = models.DateTimeField("last update")
+    user = models.ForeignKey(GitUser, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)

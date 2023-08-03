@@ -43,3 +43,8 @@ table{
 .label{
  clear: left;
 }
+
+.new_comment {
+ margin-top: 3rem;
+ margin-bottom: 3rem;
+}
