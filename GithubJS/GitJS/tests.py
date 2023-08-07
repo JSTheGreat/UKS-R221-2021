@@ -508,8 +508,8 @@ class InitialTests(TestCase):
         comments2 = project.get_comments('user4')
 
         self.assertEqual(len(comments1), len(comments2))
-        self.assertNotEqual(comments2[0].reaction, comments1[0].reaction)
+        self.assertNotEqual(comments2[0]['reaction'], comments1[0]['reaction'])
 
-        self.assertEqual(comments1[0].reaction, '')
-        self.assertEqual(comments1[1].reaction, 'LIKE')
-        self.assertEqual(comments1[2].reaction, 'DISLIKE')
+        self.assertEqual(comments1[0]['reaction'], '')
+        self.assertEqual(comments1[1]['reaction'], 'LIKE')
+        self.assertEqual(comments1[2]['reaction'], 'DISLIKE')
