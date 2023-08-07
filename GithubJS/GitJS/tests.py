@@ -501,3 +501,15 @@ class InitialTests(TestCase):
 
         response = self.client.post(reverse('remove_contributor', args=(1, 'user4',)), context, follow=True)
         self.assertEqual(response.status_code, 404)
+
+    def test_get_comments(self):
+        project = Project.objects.get(id=1)
+        comments1 = project.get_comments('user1')
+        comments2 = project.get_comments('user4')
+
+        self.assertEqual(len(comments1), len(comments2))
+        self.assertNotEqual(comments2[0].reaction, comments1[0].reaction)
+
+        self.assertEqual(comments1[0].reaction, '')
+        self.assertEqual(comments1[1].reaction, 'LIKE')
+        self.assertEqual(comments1[2].reaction, 'DISLIKE')
