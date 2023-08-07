@@ -26,6 +26,7 @@ def add_comment(request, project_id):
         comment = Comment(id=new_id, text=new_comment, last_update=timezone.now())
         comment.project = project
         comment.user = GitUser.objects.get_by_natural_key(request.user.username)
+        comment.project.update_users('Comment added in ' + project.title + ' by ' + request.user.username)
         comment.save()
         return render(request, "project_view.html", {"project": project, "title": project.title,
                                                      'comments': comment.project.get_comments(request.user.username)})
@@ -40,15 +41,20 @@ def toggle_reaction(request, comment_id, reaction_type):
     if len(reaction) == 0:
         new_id = Reaction.objects.all().order_by('-id')[0].id + 1
         new_reaction = Reaction(id=new_id, user=user, comment=comment, type=reaction_type)
+        comment.project.update_users('Reaction added for comment ' + str(comment_id) + ' by ' + request.user.username)
         new_reaction.save()
         return render(request, "project_view.html", {"project": comment.project, "title": comment.project.title,
                                                      'comments': comment.project.get_comments(request.user.username)})
     else:
         existing_reaction = reaction[0]
         if existing_reaction.type == reaction_type:
+            comment.project.update_users('Reaction deleted for comment ' + str(comment_id) +
+                                         ' by ' + request.user.username)
             existing_reaction.delete()
         else:
             existing_reaction.type = reaction_type
+            comment.project.update_users('Reaction changed for comment in ' + str(comment_id) + ' by '
+                                         + request.user.username)
             existing_reaction.save()
         return render(request, "project_view.html", {"project": comment.project, "title": comment.project.title,
                                                      'comments': comment.project.get_comments(request.user.username)})
