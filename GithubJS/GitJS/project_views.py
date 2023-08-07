@@ -18,21 +18,21 @@ def single_project(request, project_id):
             watched = WatchedProject.objects.get(project_id=project_id, user_id=request.user.pk)
             return render(request, 'project_view.html', {'title': project.title, "project": project,
                                                          "starred": True, "watched": True, "can_fork": can_fork,
-                                                         'comments': project.get_comments()})
+                                                         'comments': project.get_comments(user.username)})
         except:
             return render(request, 'project_view.html', {'title': project.title, "project": project,
                                                          "starred": True, "watched": False, "can_fork": can_fork,
-                                                         'comments': project.get_comments()})
+                                                         'comments': project.get_comments(user.username)})
     except:
         try:
             watched = WatchedProject.objects.get(project_id=project_id, user_id=request.user.pk)
             return render(request, 'project_view.html', {'title': project.title, "project": project,
                                                          "starred": False, "watched": True, "can_fork": can_fork,
-                                                         'comments': project.get_comments()})
+                                                         'comments': project.get_comments(user.username)})
         except:
             return render(request, 'project_view.html', {'title': project.title, "project": project,
                                                          "starred": False, "watched": False, "can_fork": can_fork,
-                                                         'comments': project.get_comments()})
+                                                         'comments': project.get_comments(user.username)})
 
 
 @login_required(login_url='login/')

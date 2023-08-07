@@ -35,5 +35,7 @@ urlpatterns = [
     path('add_contributor/<int:project_id>', project_views.add_contributor, name='add_contributor'),
     path('remove_contributor/<int:project_id>/<str:username>', project_views.remove_contributor,
          name='remove_contributor'),
-    path('add_comment/<int:project_id>', comment_and_reaction_views.add_comment, name='add_comment')
+    path('add_comment/<int:project_id>', comment_and_reaction_views.add_comment, name='add_comment'),
+    path('toggle_reaction/<int:comment_id>/<str:reaction_type>', comment_and_reaction_views.toggle_reaction,
+         name='toggle_reaction')
 ]

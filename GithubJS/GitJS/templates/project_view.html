@@ -75,10 +75,23 @@
     <div class="list-group">
         <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
             <div class="d-flex w-100 justify-content-between">
-              <h5 class="mb-1">{{comment.user.username}}</h5>
-              <small>{{comment.last_update}}</small>
+              <h5 class="mb-1">{{comment.comment.user.username}}</h5>
+              <small>{{comment.comment.last_update}}</small>
             </div>
-            <p class="mb-1">{{comment.text}}</p>
+            <p class="mb-1">{{comment.comment.text}}</p>
+            <small>
+                {% if comment.reaction == 'LIKE' %}
+                    <a href="{% url 'toggle_reaction' comment.comment.id 'LIKE' %}" class="LIKE">LIKED</a>
+                {% else %}
+                    <a href="{% url 'toggle_reaction' comment.comment.id 'LIKE' %}">LIKE</a>
+                {% endif %}
+                <span>    </span>
+                {% if comment.reaction == 'DISLIKE' %}
+                    <a href="{% url 'toggle_reaction' comment.comment.id 'DISLIKE' %}" class="DISLIKE">DISLIKED</a>
+                {% else %}
+                    <a href="{% url 'toggle_reaction' comment.comment.id 'DISLIKE' %}">DISLIKE</a>
+                {% endif %}
+            </small>
         </a>
     </div>
     {% endfor %}
