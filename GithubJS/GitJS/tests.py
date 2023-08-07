@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .management.commands.fill_database import Command
-from .models import Project, GitUser, Branch, Milestone, File
+from .models import Project, GitUser, Branch, Milestone, File, Comment, Reaction
 
 
 class InitialTests(TestCase):
@@ -501,3 +501,56 @@ class InitialTests(TestCase):
 
         response = self.client.post(reverse('remove_contributor', args=(1, 'user4',)), context, follow=True)
         self.assertEqual(response.status_code, 404)
+
+    def test_get_comments(self):
+        project = Project.objects.get(id=1)
+        comments1 = project.get_comments('user1')
+        comments2 = project.get_comments('user4')
+
+        self.assertEqual(len(comments1), len(comments2))
+        self.assertNotEqual(comments2[0]['reaction'], comments1[0]['reaction'])
+
+        self.assertEqual(comments1[0]['reaction'], '')
+        self.assertEqual(comments1[1]['reaction'], 'LIKE')
+        self.assertEqual(comments1[2]['reaction'], 'DISLIKE')
+
+    def test_add_comment_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project = Project.objects.get(id=1)
+        context = {'new_comment': 'Generic new comment'}
+        size_before = len(project.get_comments('user1'))
+        self.client.post(reverse('add_comment', args=(1, )), context, follow=True)
+        self.assertTrue(len(project.get_comments('user1')) > size_before)
+        self.assertEqual(project.get_comments('user1')[0]['comment'].text, 'Generic new comment')
+
+    def test_add_comment_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_comment': '   '}
+        response = self.client.post(reverse('add_comment', args=(1, )), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'You can\'t submit an empty comment')
+
+    def test_toggle_reaction(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        user = GitUser.objects.get_by_natural_key("user1")
+        comment = Comment.objects.get(id=1)
+
+        # testing adding
+        size_before = len(Reaction.objects.filter(user=user, comment=comment))
+        self.client.post(reverse('toggle_reaction', args=(1, 'LIKE', )), context, follow=True)
+        self.assertTrue(len(Reaction.objects.filter(user=user, comment=comment)) > size_before)
+
+        # testing changing
+        reaction_before = Reaction.objects.filter(user=user, comment=comment)[0].type
+        self.client.post(reverse('toggle_reaction', args=(1, 'DISLIKE',)), context, follow=True)
+        self.assertNotEqual(Reaction.objects.filter(user=user, comment=comment)[0].type, reaction_before)
+
+        # testing deleting
+        size_before = len(Reaction.objects.filter(user=user, comment=comment))
+        self.client.post(reverse('toggle_reaction', args=(1, 'DISLIKE',)), context, follow=True)
+        self.assertTrue(len(Reaction.objects.filter(user=user, comment=comment)) < size_before)

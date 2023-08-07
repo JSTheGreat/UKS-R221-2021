@@ -66,6 +66,18 @@ class Project(models.Model):
                 ret.append(con.username)
         return ret
 
+    def get_comments(self, username):
+        comments = Comment.objects.filter(project=self).order_by('-last_update')
+        ret = []
+        for comment in comments:
+            user = GitUser.objects.get_by_natural_key(username)
+            reaction = Reaction.objects.filter(comment=comment, user=user)
+            if len(reaction) == 0:
+                ret.append({"comment": comment, "reaction": ""})
+            else:
+                ret.append({"comment": comment, "reaction": reaction[0].type})
+        return ret
+
 
 class StarredProject(models.Model):
     project_id = models.BigIntegerField()
@@ -106,3 +118,16 @@ class File(models.Model):
     title = models.CharField(max_length=100)
     text = models.CharField(max_length=200)
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+
+
+class Comment(models.Model):
+    text = models.CharField(max_length=200)
+    last_update = models.DateTimeField("last update")
+    user = models.ForeignKey(GitUser, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+
+class Reaction(models.Model):
+    type = models.CharField(max_length=10)
+    user = models.ForeignKey(GitUser, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)

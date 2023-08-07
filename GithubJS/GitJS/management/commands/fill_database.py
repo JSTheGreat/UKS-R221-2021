@@ -6,7 +6,7 @@ from django.utils import timezone
 import datetime
 
 from ...models import Project, Branch, GitUser, StarredProject,\
-    WatchedProject, ProjectUpdate, Milestone, File, Contributor
+    WatchedProject, ProjectUpdate, Milestone, File, Contributor, Comment, Reaction
 
 
 class Command(BaseCommand):
@@ -208,9 +208,99 @@ class Command(BaseCommand):
         f12.branch = Branch.objects.get(id=6)
         f12.save()
 
+    def _add_comments(self):
+        c1 = Comment(id=1, text='Text for comment no 1')
+        c1.last_update = timezone.now() - datetime.timedelta(days=1)
+        c1.user = GitUser.objects.get_by_natural_key("user4")
+        c1.project = Project.objects.get(id=1)
+        c1.save()
+
+        c2 = Comment(id=2, text='Text for comment no 2')
+        c2.last_update = timezone.now() - datetime.timedelta(days=2)
+        c2.user = GitUser.objects.get_by_natural_key("user6")
+        c2.project = Project.objects.get(id=1)
+        c2.save()
+
+        c3 = Comment(id=3, text='Text for comment no 3')
+        c3.last_update = timezone.now() - datetime.timedelta(days=3)
+        c3.user = GitUser.objects.get_by_natural_key("user1")
+        c3.project = Project.objects.get(id=1)
+        c3.save()
+
+        c4 = Comment(id=4, text='Text for comment no 4')
+        c4.last_update = timezone.now() - datetime.timedelta(days=3)
+        c4.user = GitUser.objects.get_by_natural_key("user4")
+        c4.project = Project.objects.get(id=2)
+        c4.save()
+
+        c5 = Comment(id=5, text='Text for comment no 5')
+        c5.last_update = timezone.now() - datetime.timedelta(days=1)
+        c5.user = GitUser.objects.get_by_natural_key("user6")
+        c5.project = Project.objects.get(id=2)
+        c5.save()
+
+        c6 = Comment(id=6, text='Text for comment no 6')
+        c6.last_update = timezone.now() - datetime.timedelta(days=4)
+        c6.user = GitUser.objects.get_by_natural_key("user2")
+        c6.project = Project.objects.get(id=3)
+        c6.save()
+
+    def _add_reactions(self):
+        r1 = Reaction(id=1, type='LIKE')
+        r1.user = GitUser.objects.get_by_natural_key("user2")
+        r1.comment = Comment.objects.get(id=1)
+        r1.save()
+
+        r2 = Reaction(id=2, type='DISLIKE')
+        r2.user = GitUser.objects.get_by_natural_key("user4")
+        r2.comment = Comment.objects.get(id=1)
+        r2.save()
+
+        r3 = Reaction(id=3, type='LIKE')
+        r3.user = GitUser.objects.get_by_natural_key("user1")
+        r3.comment = Comment.objects.get(id=2)
+        r3.save()
+
+        r4 = Reaction(id=4, type='DISLIKE')
+        r4.user = GitUser.objects.get_by_natural_key("user5")
+        r4.comment = Comment.objects.get(id=2)
+        r4.save()
+
+        r5 = Reaction(id=5, type='DISLIKE')
+        r5.user = GitUser.objects.get_by_natural_key("user6")
+        r5.comment = Comment.objects.get(id=3)
+        r5.save()
+
+        r6 = Reaction(id=6, type='DISLIKE')
+        r6.user = GitUser.objects.get_by_natural_key("user1")
+        r6.comment = Comment.objects.get(id=3)
+        r6.save()
+
+        r7 = Reaction(id=7, type='LIKE')
+        r7.user = GitUser.objects.get_by_natural_key("user5")
+        r7.comment = Comment.objects.get(id=4)
+        r7.save()
+
+        r8 = Reaction(id=8, type='LIKE')
+        r8.user = GitUser.objects.get_by_natural_key("user2")
+        r8.comment = Comment.objects.get(id=4)
+        r8.save()
+
+        r9 = Reaction(id=9, type='LIKE')
+        r9.user = GitUser.objects.get_by_natural_key("user4")
+        r9.comment = Comment.objects.get(id=5)
+        r9.save()
+
+        r10 = Reaction(id=10, type='DISLIKE')
+        r10.user = GitUser.objects.get_by_natural_key("user4")
+        r10.comment = Comment.objects.get(id=6)
+        r10.save()
+
     def handle(self, *args, **options):
         self._add_users()
         self._add_projects()
         self._add_branches()
         self._add_milestones()
         self._add_files()
+        self._add_comments()
+        self._add_reactions()

@@ -1,6 +1,7 @@
 from django.urls import path
 
-from . import views, project_views, branch_views, milestone_views, file_views
+from . import views, project_views, branch_views, milestone_views, file_views, \
+    comment_and_reaction_views
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -33,5 +34,8 @@ urlpatterns = [
     path('contributors/<int:project_id>', project_views.contributors, name='contributors'),
     path('add_contributor/<int:project_id>', project_views.add_contributor, name='add_contributor'),
     path('remove_contributor/<int:project_id>/<str:username>', project_views.remove_contributor,
-         name='remove_contributor')
+         name='remove_contributor'),
+    path('add_comment/<int:project_id>', comment_and_reaction_views.add_comment, name='add_comment'),
+    path('toggle_reaction/<int:comment_id>/<str:reaction_type>', comment_and_reaction_views.toggle_reaction,
+         name='toggle_reaction')
 ]
