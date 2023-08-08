@@ -6,7 +6,8 @@ from django.utils import timezone
 import datetime
 
 from ...models import Project, Branch, GitUser, StarredProject,\
-    WatchedProject, ProjectUpdate, Milestone, File, Contributor, Comment, Reaction
+    WatchedProject, ProjectUpdate, Milestone, File, Contributor, \
+    Comment, Reaction, Issue
 
 
 class Command(BaseCommand):
@@ -296,6 +297,41 @@ class Command(BaseCommand):
         r10.comment = Comment.objects.get(id=6)
         r10.save()
 
+    def _add_issues(self):
+        i1 = Issue(id=1, title='Issue 1', description='Description text for issue no 1', state='OPEN')
+        i1.project = Project.objects.get(id=1)
+        i1.milestone = Milestone.objects.get(id=1)
+        i1.save()
+
+        i2 = Issue(id=2, title='Issue 2', description='Description text for issue no 2', state='CLOSED')
+        i2.project = Project.objects.get(id=1)
+        i2.milestone = Milestone.objects.get(id=2)
+        i2.save()
+
+        i3 = Issue(id=3, title='Issue 3', description='Description text for issue no 3', state='OPEN')
+        i3.project = Project.objects.get(id=1)
+        i3.milestone = Milestone.objects.get(id=1)
+        i3.save()
+
+        i4 = Issue(id=4, title='Issue 4', description='Description text for issue no 4', state='OPEN')
+        i4.project = Project.objects.get(id=1)
+        i4.milestone = Milestone.objects.get(id=3)
+        i4.save()
+
+        i5 = Issue(id=5, title='Issue 5', description='Description text for issue no 5', state='CLOSED')
+        i5.project = Project.objects.get(id=2)
+        i5.milestone = Milestone.objects.get(id=4)
+        i5.save()
+
+        i6 = Issue(id=6, title='Issue 6', description='Description text for issue no 6', state='OPEN')
+        i6.project = Project.objects.get(id=2)
+        i6.milestone = Milestone.objects.get(id=5)
+        i6.save()
+
+        i7 = Issue(id=7, title='Issue 7', description='Description text for issue no 7', state='OPEN')
+        i7.project = Project.objects.get(id=3)
+        i7.save()
+
     def handle(self, *args, **options):
         self._add_users()
         self._add_projects()
@@ -304,3 +340,4 @@ class Command(BaseCommand):
         self._add_files()
         self._add_comments()
         self._add_reactions()
+        self._add_issues()

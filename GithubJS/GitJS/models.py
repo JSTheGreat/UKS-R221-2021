@@ -54,6 +54,10 @@ class Project(models.Model):
         milestones = Milestone.objects.filter(project=self, state=state)
         return milestones
 
+    def get_issues(self, state):
+        issues = Issue.objects.filter(project=self, state=state)
+        return issues
+
     def get_contributors(self):
         contributors = Contributor.objects.filter(project_id=self.id)
         return contributors
@@ -65,6 +69,14 @@ class Project(models.Model):
              len(Contributor.objects.filter(username=con.username, project_id=self.id)) == 0:
                 ret.append(con.username)
         return ret
+
+    def can_edit(self, username):
+        if self.lead.username == username:
+            return True
+        for contributor in self.get_contributors():
+            if contributor.username == username:
+                return True
+        return False
 
     def get_comments(self, username):
         comments = Comment.objects.filter(project=self).order_by('-last_update')
@@ -131,3 +143,11 @@ class Reaction(models.Model):
     type = models.CharField(max_length=10)
     user = models.ForeignKey(GitUser, on_delete=models.CASCADE)
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+
+
+class Issue(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.CharField(max_length=200)
+    state = models.CharField(max_length=7)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    milestone = models.ForeignKey(Milestone, null=True, on_delete=models.SET_NULL)

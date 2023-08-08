@@ -28,7 +28,11 @@
         </a>
         {% endif %}
 
-        <a class="ms-5" href="{% url 'milestones' project.id 'OPEN' %}">
+        <a class="ms-5" href="{% url 'issues' project.id 'OPEN' %}">
+            <button class="btn btn-secondary">Issues</button>
+        </a>
+
+        <a href="{% url 'milestones' project.id 'OPEN' %}">
             <button class="btn btn-secondary">Milestones</button>
         </a>
 
