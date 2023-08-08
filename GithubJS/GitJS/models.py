@@ -70,11 +70,16 @@ class Project(models.Model):
                 ret.append(con.username)
         return ret
 
-    def can_edit(self, username):
-        if self.lead.username == username:
-            return True
+    def get_all_participants(self):
+        participants = []
         for contributor in self.get_contributors():
-            if contributor.username == username:
+            participants.append(contributor.username)
+        participants.append(self.lead.username)
+        return participants
+
+    def can_edit(self, username):
+        for participant in self.get_all_participants():
+            if participant == username:
                 return True
         return False
 
@@ -151,3 +156,4 @@ class Issue(models.Model):
     state = models.CharField(max_length=7)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     milestone = models.ForeignKey(Milestone, null=True, on_delete=models.SET_NULL)
+    assignee = models.ForeignKey(GitUser, null=True, on_delete=models.SET_NULL)

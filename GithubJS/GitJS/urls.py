@@ -38,5 +38,6 @@ urlpatterns = [
     path('add_comment/<int:project_id>', comment_and_reaction_views.add_comment, name='add_comment'),
     path('toggle_reaction/<int:comment_id>/<str:reaction_type>', comment_and_reaction_views.toggle_reaction,
          name='toggle_reaction'),
-    path('issues/<int:project_id>/<str:state>', issue_views.get_issues, name='issues')
+    path('issues/<int:project_id>/<str:state>', issue_views.get_issues, name='issues'),
+    path('<int:project_id>/add_issue', issue_views.add_issue, name='add_issue')
 ]
