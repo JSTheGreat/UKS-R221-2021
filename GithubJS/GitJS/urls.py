@@ -41,5 +41,6 @@ urlpatterns = [
     path('issues/<int:project_id>/<str:state>', issue_views.get_issues, name='issues'),
     path('<int:project_id>/add_issue', issue_views.add_issue, name='add_issue'),
     path('edit_issue/<int:issue_id>', issue_views.edit_issue, name='edit_issue'),
-    path('toggle_issue/<int:issue_id>', issue_views.toggle_issue_status, name='toggle_issue')
+    path('toggle_issue/<int:issue_id>', issue_views.toggle_issue_status, name='toggle_issue'),
+    path('milestone_issues/<int:milestone_id>/<str:state>', issue_views.get_milestone_issues, name='milestone_issues')
 ]

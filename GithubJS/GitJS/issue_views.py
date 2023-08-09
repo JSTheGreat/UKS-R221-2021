@@ -17,6 +17,15 @@ def get_issues(request, project_id, state):
 
 
 @login_required(login_url='login/')
+@permission_required('GitJS.can_view', raise_exception=True)
+def get_milestone_issues(request, milestone_id, state):
+    milestone = get_object_or_404(Milestone, id=milestone_id)
+    can_edit = milestone.project.can_edit(request.user.username)
+    return render(request, 'issues.html', {'title': 'Issues for ' + milestone.title, 'milestone_id': milestone.id,
+                                           'issues': milestone.get_issues(state), 'can_edit': can_edit})
+
+
+@login_required(login_url='login/')
 @permission_required('GitJS.can_edit', raise_exception=True)
 def add_issue(request, project_id):
     project = get_object_or_404(Project, id=project_id)
@@ -64,7 +73,7 @@ def add_issue(request, project_id):
         if assignee != 'None':
             issue.assignee = GitUser.objects.get_by_natural_key(assignee)
         issue.save()
-
+        issue.project.update_users('New issue added in ' + project.title)
         return HttpResponseRedirect(reverse("issues", args=(project_id, 'OPEN', )))
 
 
@@ -114,6 +123,7 @@ def edit_issue(request, issue_id):
                                                        'participants': issue.project.get_all_participants(),
                                                        'error_message': error_message,
                                                        })
+        issue.project.update_users('Issue ' + issue.title + ' updated in ' + issue.project.title)
         issue.title = new_title
         issue.description = new_desc
         if milestone != 'None':
@@ -135,7 +145,9 @@ def toggle_issue_status(request, issue_id):
     issue = get_object_or_404(Issue, id=issue_id)
     if issue.state == 'OPEN':
         issue.state = 'CLOSED'
+        issue.project.update_users('Issue ' + issue.title + ' closed in ' + issue.project.title)
     else:
         issue.state = 'OPEN'
+        issue.project.update_users('Issue ' + issue.title + ' opened in ' + issue.project.title)
     issue.save()
     return HttpResponseRedirect(reverse("issues", args=(issue.project.id, 'OPEN',)))

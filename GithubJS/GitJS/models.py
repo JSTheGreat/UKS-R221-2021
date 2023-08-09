@@ -130,6 +130,15 @@ class Milestone(models.Model):
     state = models.CharField(max_length=7)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
+    def get_issues(self, state):
+        issues = Issue.objects.filter(milestone=self, state=state)
+        return issues
+
+    def get_percent(self):
+        completed = len(Issue.objects.filter(milestone=self, state='CLOSED'))
+        total = len(Issue.objects.filter(milestone=self))
+        return int(round((completed * 100) / total, 2)) if total != 0 else 0
+
 
 class File(models.Model):
     title = models.CharField(max_length=100)

@@ -332,6 +332,11 @@ class Command(BaseCommand):
         i7.project = Project.objects.get(id=3)
         i7.save()
 
+        i8 = Issue(id=8, title='Issue 8', description='Description text for issue no 8', state='CLOSED')
+        i8.project = Project.objects.get(id=1)
+        i8.milestone = Milestone.objects.get(id=1)
+        i8.save()
+
     def handle(self, *args, **options):
         self._add_users()
         self._add_projects()

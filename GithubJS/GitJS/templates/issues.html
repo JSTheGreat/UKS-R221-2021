@@ -4,12 +4,21 @@
 
     <br>
     <div>
+        {% if project_id %}
         <a href="{% url 'issues' project_id 'OPEN' %}">
             <button class="btn btn-primary">OPEN</button>
         </a>
         <a href="{% url 'issues' project_id 'CLOSED' %}">
             <button class="btn btn-secondary">CLOSED</button>
         </a>
+        {% else %}
+        <a href="{% url 'milestone_issues' milestone_id 'OPEN' %}">
+            <button class="btn btn-primary">OPEN</button>
+        </a>
+        <a href="{% url 'milestone_issues' milestone_id 'CLOSED' %}">
+            <button class="btn btn-secondary">CLOSED</button>
+        </a>
+        {% endif %}
     </div>
     <br><br>
     <ul class="list-group">
@@ -36,9 +45,11 @@
 
     <br>
     {% if can_edit %}
-    <a href="{% url 'add_issue' project_id %}">
-        <button class="btn btn-success">Add issue</button>
-    </a>
+        {% if project_id %}
+        <a href="{% url 'add_issue' project_id %}">
+            <button class="btn btn-success">Add issue</button>
+        </a>
+        {% endif %}
     {% endif %}
 
 {% endblock %}
