@@ -17,7 +17,7 @@ def get_issues(request, project_id, state):
 
 
 @login_required(login_url='login/')
-@permission_required('GitJS.can_view', raise_exception=True)
+@permission_required('GitJS.can_edit', raise_exception=True)
 def add_issue(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     if request.method == 'GET':
@@ -66,3 +66,76 @@ def add_issue(request, project_id):
         issue.save()
 
         return HttpResponseRedirect(reverse("issues", args=(project_id, 'OPEN', )))
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_edit', raise_exception=True)
+def edit_issue(request, issue_id):
+    issue = get_object_or_404(Issue, id=issue_id)
+    old_assignee = issue.assignee.username if issue.assignee else 'None'
+    old_milestone = issue.milestone.title if issue.milestone else 'None'
+    if request.method == 'GET':
+        return render(request, 'issue_form.html', {'title': 'Issue #'+str(issue_id), 'project_id': issue.project.id,
+                                                   'form_action': 'edit_issue/' + str(issue_id),
+                                                   'input_title': issue.title, 'input_desc': issue.description,
+                                                   'input_assignee': old_assignee,
+                                                   'input_milestone': old_milestone,
+                                                   'milestones': issue.project.get_milestones('OPEN'),
+                                                   'participants': issue.project.get_all_participants()
+                                                   })
+    else:
+        new_title = request.POST['new_title'].strip()
+        new_desc = request.POST['new_desc'].strip()
+        assignee = request.POST['assignee'].strip()
+        milestone = request.POST['milestone'].strip()
+
+        error_message = ''
+        if new_title == '' or new_title is None:
+            error_message = 'Title can\'t be empty'
+        if error_message:
+            return render(request, 'issue_form.html', {'title': 'Issue #'+str(issue_id), 'project_id': issue.project.id,
+                                                       'form_action': 'edit_issue/' + str(issue_id),
+                                                       'input_title': issue.title, 'input_desc': issue.description,
+                                                       'input_assignee': old_assignee,
+                                                       'input_milestone': old_milestone,
+                                                       'milestones': issue.project.get_milestones('OPEN'),
+                                                       'participants': issue.project.get_all_participants(),
+                                                       'error_message': error_message,
+                                                       })
+        existing_issues = Issue.objects.filter(title=new_title)
+        if len(existing_issues) != 0 and existing_issues[0].id != issue_id:
+            error_message = 'Issue with given title already exists'
+            return render(request, 'issue_form.html', {'title': 'Issue #'+str(issue_id), 'project_id': issue.project.id,
+                                                       'form_action': 'edit_issue/' + str(issue_id),
+                                                       'input_title': issue.title, 'input_desc': issue.description,
+                                                       'input_assignee': old_assignee,
+                                                       'input_milestone': old_milestone,
+                                                       'milestones': issue.project.get_milestones('OPEN'),
+                                                       'participants': issue.project.get_all_participants(),
+                                                       'error_message': error_message,
+                                                       })
+        issue.title = new_title
+        issue.description = new_desc
+        if milestone != 'None':
+            issue.milestone = Milestone.objects.get(title=milestone)
+        else:
+            issue.milestone = None
+        if assignee != 'None':
+            issue.assignee = GitUser.objects.get_by_natural_key(assignee)
+        else:
+            issue.assignee = None
+        issue.save()
+
+        return HttpResponseRedirect(reverse("issues", args=(issue.project.id, 'OPEN', )))
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_edit', raise_exception=True)
+def toggle_issue_status(request, issue_id):
+    issue = get_object_or_404(Issue, id=issue_id)
+    if issue.state == 'OPEN':
+        issue.state = 'CLOSED'
+    else:
+        issue.state = 'OPEN'
+    issue.save()
+    return HttpResponseRedirect(reverse("issues", args=(issue.project.id, 'OPEN',)))

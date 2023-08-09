@@ -18,14 +18,14 @@
             {{issue.title}}
             {% if can_edit %}
                 {% if issue.state == 'OPEN' %}
-                <a>
+                <a href="{% url 'edit_issue' issue.id %}">
                     <button class="btn btn-warning">Edit</button>
                 </a>
-                <a>
+                <a href="{% url 'toggle_issue' issue.id %}">
                     <button class="btn btn-danger">Close</button>
                 </a>
                 {% else %}
-                <a>
+                <a href="{% url 'toggle_issue' issue.id %}">
                     <button class="btn btn-info">Reopen</button>
                 </a>
                 {% endif %}
