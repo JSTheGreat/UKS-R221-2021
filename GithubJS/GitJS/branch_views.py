@@ -72,3 +72,10 @@ def edit_branch(request, branch_id):
         branch.name = new_branch_name
         branch.save()
         return HttpResponseRedirect(reverse("single_project", args=(branch.project.id,)))
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_view', raise_exception=True)
+def get_commit_history(request, branch_id):
+    branch = get_object_or_404(Branch, id=branch_id)
+    return render(request, "commits.html", {'commits': branch.get_commits(), 'branch': branch})

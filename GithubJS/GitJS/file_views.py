@@ -39,7 +39,6 @@ def add_file(request, branch_id):
                                                       "form_action": str(branch_id)+"/add_file"})
         except:
             f.save()
-            branch.project.update_users('File ' + f.title + ' added to ' + branch.project.title + ' on ' + branch.name)
             return HttpResponseRedirect(reverse("single_branch", args=(branch_id,)))
 
 
@@ -70,8 +69,6 @@ def edit_file(request, file_id):
         file.title = file_title
         file.text = file_text
         file.save()
-        branch = file.branch
-        branch.project.update_users('File ' + file.title + ' changed in ' + branch.name + ' on ' + branch.project.title)
         return HttpResponseRedirect(reverse("single_branch", args=(file.branch.id,)))
 
 

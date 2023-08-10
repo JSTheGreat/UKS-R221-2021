@@ -122,6 +122,10 @@ class Branch(models.Model):
     name = models.CharField(max_length=100)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
+    def get_commits(self):
+        commits = Commit.objects.filter(branch=self).order_by('-date_time')
+        return commits
+
 
 class Milestone(models.Model):
     title = models.CharField(max_length=100)
@@ -166,3 +170,10 @@ class Issue(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     milestone = models.ForeignKey(Milestone, null=True, on_delete=models.SET_NULL)
     assignee = models.ForeignKey(GitUser, null=True, on_delete=models.SET_NULL)
+
+
+class Commit(models.Model):
+    log_message = models.CharField(max_length=200)
+    date_time = models.DateTimeField("date committed")
+    branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
+    committer = models.CharField(max_length=100)
