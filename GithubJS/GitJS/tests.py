@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .management.commands.fill_database import Command
-from .models import Project, GitUser, Branch, Milestone, File, Comment, Reaction
+from .models import Project, GitUser, Branch, Milestone, File, Comment, Reaction, Issue
 
 
 class InitialTests(TestCase):
@@ -554,3 +554,47 @@ class InitialTests(TestCase):
         size_before = len(Reaction.objects.filter(user=user, comment=comment))
         self.client.post(reverse('toggle_reaction', args=(1, 'DISLIKE',)), context, follow=True)
         self.assertTrue(len(Reaction.objects.filter(user=user, comment=comment)) < size_before)
+
+    def test_get_all_participants(self):
+        project = Project.objects.get(id=1)
+        participants = project.get_all_participants()
+
+        self.assertEqual(len(participants), 3)
+        self.assertTrue(len(participants) > len(project.get_contributors()))
+
+        self.assertEqual(participants[0], 'user4')
+        self.assertEqual(participants[1], 'user5')
+        self.assertEqual(participants[2], 'user1')
+
+    def test_project_can_edit(self):
+        project = Project.objects.get(id=1)
+
+        self.assertTrue(project.can_edit('user1'))
+        self.assertTrue(project.can_edit('user4'))
+        self.assertFalse(project.can_edit('user2'))
+
+    def test_project_get_issues(self):
+        project = Project.objects.get(id=1)
+        open = project.get_issues('OPEN')
+        closed = project.get_issues('CLOSED')
+
+        self.assertEqual(len(open), 3)
+        self.assertEqual(len(closed), 2)
+
+    def test_milestone_get_issues(self):
+        milestone = Milestone.objects.get(id=1)
+        open = milestone.get_issues('OPEN')
+        closed = milestone.get_issues('CLOSED')
+
+        self.assertEqual(len(open), 2)
+        self.assertEqual(len(closed), 1)
+
+    def test_get_percent(self):
+        milestone = Milestone.objects.get(id=1)
+        self.assertEqual(milestone.get_percent(), 33)
+
+        milestone = Milestone.objects.get(id=2)
+        self.assertEqual(milestone.get_percent(), 100)
+
+        milestone = Milestone.objects.get(id=3)
+        self.assertEqual(milestone.get_percent(), 0)
