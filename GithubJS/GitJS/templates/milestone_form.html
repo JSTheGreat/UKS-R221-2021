@@ -2,6 +2,11 @@
 {% block content %}
     <h2>{{ title }}</h2>
 
+    {% if input_title != '' %}
+        <br>
+        <h6>{{percent}} % complete</h6>
+    {% endif %}
+
     <br>
     <form action="/{{form_action}}" method="post">
     {% csrf_token %}

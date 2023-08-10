@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ title }}</h1>
+
+    <br>
+    <div>
+        {% if project_id %}
+        <a href="{% url 'issues' project_id 'OPEN' %}">
+            <button class="btn btn-primary">OPEN</button>
+        </a>
+        <a href="{% url 'issues' project_id 'CLOSED' %}">
+            <button class="btn btn-secondary">CLOSED</button>
+        </a>
+        {% else %}
+        <a href="{% url 'milestone_issues' milestone_id 'OPEN' %}">
+            <button class="btn btn-primary">OPEN</button>
+        </a>
+        <a href="{% url 'milestone_issues' milestone_id 'CLOSED' %}">
+            <button class="btn btn-secondary">CLOSED</button>
+        </a>
+        {% endif %}
+    </div>
+    <br><br>
+    <ul class="list-group">
+    {% for issue in issues %}
+        <li class="list-group-item">
+            {{issue.title}}
+            {% if can_edit %}
+                {% if issue.state == 'OPEN' %}
+                <a href="{% url 'edit_issue' issue.id %}">
+                    <button class="btn btn-warning">Edit</button>
+                </a>
+                <a href="{% url 'toggle_issue' issue.id %}">
+                    <button class="btn btn-danger">Close</button>
+                </a>
+                {% else %}
+                <a href="{% url 'toggle_issue' issue.id %}">
+                    <button class="btn btn-info">Reopen</button>
+                </a>
+                {% endif %}
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+
+    <br>
+    {% if can_edit %}
+        {% if project_id %}
+        <a href="{% url 'add_issue' project_id %}">
+            <button class="btn btn-success">Add issue</button>
+        </a>
+        {% endif %}
+    {% endif %}
+
+{% endblock %}

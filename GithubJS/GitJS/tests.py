@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .management.commands.fill_database import Command
-from .models import Project, GitUser, Branch, Milestone, File, Comment, Reaction
+from .models import Project, GitUser, Branch, Milestone, File, Comment, Reaction, Issue
 
 
 class InitialTests(TestCase):
@@ -189,7 +189,7 @@ class InitialTests(TestCase):
         response = self.client.get('http://localhost:8000/my_starred', follow=True)
         self.assertTrue(starred_project in response.context['projects'])
 
-    def test_remove_watched_client(self):
+    def test_remove_starred_client(self):
         context = {'uname': 'user1', 'psw': 'user1'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
@@ -554,3 +554,126 @@ class InitialTests(TestCase):
         size_before = len(Reaction.objects.filter(user=user, comment=comment))
         self.client.post(reverse('toggle_reaction', args=(1, 'DISLIKE',)), context, follow=True)
         self.assertTrue(len(Reaction.objects.filter(user=user, comment=comment)) < size_before)
+
+    def test_get_all_participants(self):
+        project = Project.objects.get(id=1)
+        participants = project.get_all_participants()
+
+        self.assertEqual(len(participants), 3)
+        self.assertTrue(len(participants) > len(project.get_contributors()))
+
+        self.assertEqual(participants[0], 'user4')
+        self.assertEqual(participants[1], 'user5')
+        self.assertEqual(participants[2], 'user1')
+
+    def test_project_can_edit(self):
+        project = Project.objects.get(id=1)
+
+        self.assertTrue(project.can_edit('user1'))
+        self.assertTrue(project.can_edit('user4'))
+        self.assertFalse(project.can_edit('user2'))
+
+    def test_project_get_issues(self):
+        project = Project.objects.get(id=1)
+        open = project.get_issues('OPEN')
+        closed = project.get_issues('CLOSED')
+
+        self.assertEqual(len(open), 3)
+        self.assertEqual(len(closed), 2)
+
+    def test_milestone_get_issues(self):
+        milestone = Milestone.objects.get(id=1)
+        open = milestone.get_issues('OPEN')
+        closed = milestone.get_issues('CLOSED')
+
+        self.assertEqual(len(open), 2)
+        self.assertEqual(len(closed), 1)
+
+    def test_get_percent(self):
+        milestone = Milestone.objects.get(id=1)
+        self.assertEqual(milestone.get_percent(), 33)
+
+        milestone = Milestone.objects.get(id=2)
+        self.assertEqual(milestone.get_percent(), 100)
+
+        milestone = Milestone.objects.get(id=3)
+        self.assertEqual(milestone.get_percent(), 0)
+
+    def test_add_issue_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project_size_before = len(Project.objects.get(id=1).get_issues('OPEN'))
+        milestone_size_before = len(Milestone.objects.get(id=1).get_issues('OPEN'))
+        context = {'new_title': 'new_title', 'new_desc': 'new_desc', 'assignee': 'user1', 'milestone': 'Milestone 1'}
+        self.client.post(reverse('add_issue', args=(1, )), context, follow=True)
+        self.assertTrue(len(Project.objects.get(id=1).get_issues('OPEN')) > project_size_before)
+        self.assertTrue(len(Milestone.objects.get(id=1).get_issues('OPEN')) > milestone_size_before)
+
+        project_size_before = len(Project.objects.get(id=1).get_issues('OPEN'))
+        milestone_size_before = len(Milestone.objects.get(id=1).get_issues('OPEN'))
+        context = {'new_title': 'new_title 2', 'new_desc': 'new_desc', 'assignee': 'None', 'milestone': 'None'}
+        self.client.post(reverse('add_issue', args=(1, )), context, follow=True)
+        self.assertTrue(len(Project.objects.get(id=1).get_issues('OPEN')) > project_size_before)
+        self.assertTrue(len(Milestone.objects.get(id=1).get_issues('OPEN')) == milestone_size_before)
+
+    def test_add_issue_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '   ', 'new_desc': 'new_desc', 'assignee': 'None', 'milestone': 'None'}
+        response = self.client.post(reverse('add_issue', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Title can\'t be empty')
+
+        context = {'new_title': 'Issue 1', 'new_desc': 'new_desc', 'assignee': 'None', 'milestone': 'None'}
+        response = self.client.post(reverse('add_issue', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Issue with given title already exists')
+
+    def test_edit_issue_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': 'new_title', 'new_desc': 'new_desc', 'assignee': 'user4', 'milestone': 'Milestone 3'}
+        self.client.post(reverse('edit_issue', args=(1,)), context, follow=True)
+        issue = Issue.objects.get(id=1)
+        self.assertEqual(issue.title, 'new_title')
+        self.assertEqual(issue.description, 'new_desc')
+        self.assertEqual(issue.assignee.username, 'user4')
+        self.assertEqual(issue.milestone.title, 'Milestone 3')
+
+        context = {'new_title': 'new_title', 'new_desc': '', 'assignee': 'None', 'milestone': 'None'}
+        self.client.post(reverse('edit_issue', args=(1,)), context, follow=True)
+        issue = Issue.objects.get(id=1)
+        self.assertEqual(issue.title, 'new_title')
+        self.assertEqual(issue.description, '')
+        self.assertIsNone(issue.assignee)
+        self.assertIsNone(issue.milestone)
+
+    def test_edit_issue_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '   ', 'new_desc': 'new_desc', 'assignee': 'user4', 'milestone': 'Milestone 3'}
+        response = self.client.post(reverse('edit_issue', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Title can\'t be empty')
+
+        context = {'new_title': 'Issue 3', 'new_desc': '', 'assignee': 'None', 'milestone': 'None'}
+        response = self.client.post(reverse('edit_issue', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Issue with given title already exists')
+
+    def test_toggle_issue_status(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        # test closing
+        self.assertEqual(Issue.objects.get(id=1).state, 'OPEN')
+        percentage_before = Issue.objects.get(id=1).milestone.get_percent()
+        self.client.post(reverse('toggle_issue', args=(1,)), context, follow=True)
+        self.assertEqual(Issue.objects.get(id=1).state, 'CLOSED')
+        self.assertTrue(Issue.objects.get(id=1).milestone.get_percent() > percentage_before)
+
+        # test reopening
+        percentage_before = Issue.objects.get(id=1).milestone.get_percent()
+        self.client.post(reverse('toggle_issue', args=(1,)), context, follow=True)
+        self.assertEqual(Issue.objects.get(id=1).state, 'OPEN')
+        self.assertTrue(Issue.objects.get(id=1).milestone.get_percent() < percentage_before)

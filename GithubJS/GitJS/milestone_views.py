@@ -73,7 +73,8 @@ def edit_milestone(request, milestone_id):
     milestone = get_object_or_404(Milestone, id=milestone_id)
     date_val = milestone.due_date.isoformat().split("T")[0]
     if request.method == 'GET':
-        return render(request, 'milestone_form.html', {'title': 'New milestone',
+        return render(request, 'milestone_form.html', {'title': 'Milestone #'+str(milestone_id),
+                                                       'percent': milestone.get_percent(),
                                                        'form_action': 'edit_milestone/'+str(milestone_id),
                                                        'input_title': milestone.title,
                                                        'input_desc': milestone.description,
@@ -93,7 +94,8 @@ def edit_milestone(request, milestone_id):
             error_message = 'Due date has to be a future date'
 
         if error_message:
-            return render(request, 'milestone_form.html', {'title': 'New milestone',
+            return render(request, 'milestone_form.html', {'title': 'Milestone #'+str(milestone_id),
+                                                           'percent': milestone.get_percent(),
                                                            'form_action': 'edit_milestone/' + str(milestone_id),
                                                            'input_title': milestone.title,
                                                            'input_desc': milestone.description,
@@ -105,7 +107,8 @@ def edit_milestone(request, milestone_id):
         if len(existing) > 0:
             if existing[0].id != milestone.id:
                 error_message = "Milestone with given title already exists"
-                return render(request, 'milestone_form.html', {'title': 'New milestone',
+                return render(request, 'milestone_form.html', {'title': 'Milestone #'+str(milestone_id),
+                                                               'percent': milestone.get_percent(),
                                                                'form_action': 'edit_milestone/' + str(milestone_id),
                                                                'input_title': milestone.title,
                                                                'input_desc': milestone.description,

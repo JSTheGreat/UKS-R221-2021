@@ -14,7 +14,10 @@
     <ul class="list-group">
     {% for milestone in milestones %}
         <li class="list-group-item">
-            {{milestone.title}} - {{milestone.due_date}} - {{milestone.state}}
+            {{milestone.title}} - {{milestone.due_date}}
+            <a href="{% url 'milestone_issues' milestone.id 'OPEN' %}">
+                <button class="btn btn-info">Issues</button>
+            </a>
             {% if milestone.state == 'OPEN' %}
             <a href="{% url 'edit_milestone' milestone.id %}">
                 <button class="btn btn-warning">Edit</button>
