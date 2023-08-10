@@ -607,15 +607,15 @@ class InitialTests(TestCase):
         milestone_size_before = len(Milestone.objects.get(id=1).get_issues('OPEN'))
         context = {'new_title': 'new_title', 'new_desc': 'new_desc', 'assignee': 'user1', 'milestone': 'Milestone 1'}
         self.client.post(reverse('add_issue', args=(1, )), context, follow=True)
-        self.assertTrue(len(Project.objects.get(id=1).get_issues()) > project_size_before)
-        self.assertTrue(len(Milestone.objects.get(id=1).get_issues()) > milestone_size_before)
+        self.assertTrue(len(Project.objects.get(id=1).get_issues('OPEN')) > project_size_before)
+        self.assertTrue(len(Milestone.objects.get(id=1).get_issues('OPEN')) > milestone_size_before)
 
         project_size_before = len(Project.objects.get(id=1).get_issues('OPEN'))
         milestone_size_before = len(Milestone.objects.get(id=1).get_issues('OPEN'))
         context = {'new_title': 'new_title 2', 'new_desc': 'new_desc', 'assignee': 'None', 'milestone': 'None'}
         self.client.post(reverse('add_issue', args=(1, )), context, follow=True)
-        self.assertTrue(len(Project.objects.get(id=1).get_issues()) > project_size_before)
-        self.assertTrue(len(Milestone.objects.get(id=1).get_issues()) == milestone_size_before)
+        self.assertTrue(len(Project.objects.get(id=1).get_issues('OPEN')) > project_size_before)
+        self.assertTrue(len(Milestone.objects.get(id=1).get_issues('OPEN')) == milestone_size_before)
 
     def test_add_issue_unsuccessful(self):
         context = {'uname': 'user1', 'psw': 'user1'}
