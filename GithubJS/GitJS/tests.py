@@ -682,9 +682,9 @@ class InitialTests(TestCase):
         branch = Branch.objects.get(id=1)
 
         commits = branch.get_commits()
-        self.assertEqual(commits[0].log_message, 'Generic text for file 6')
-        self.assertEqual(commits[0].log_message, 'Generic text for file 2')
-        self.assertEqual(commits[0].log_message, 'Generic text for file 1')
+        self.assertEqual(commits[0].log_message, 'File File 6 added')
+        self.assertEqual(commits[0].log_message, 'File File 2 added')
+        self.assertEqual(commits[0].log_message, 'File File 1 added')
 
     def test_get_add_file_commit(self):
         context = {'uname': 'user1', 'psw': 'user1'}
@@ -694,7 +694,7 @@ class InitialTests(TestCase):
         size_before = len(Branch.objects.get(id=2).get_commits())
         self.client.post(reverse('add_file', args=(2,)), context, follow=True)
         branch = Branch.objects.get(id=2)
-        self.assertTrue(branch.get_commits() > size_before)
+        self.assertTrue(len(branch.get_commits()) > size_before)
         self.assertEqual(branch.get_commits()[0].log_message, 'File New title added')
 
     def test_get_edit_file_commit(self):
@@ -714,5 +714,5 @@ class InitialTests(TestCase):
         size_before = len(Branch.objects.get(id=1).get_commits())
         self.client.post(reverse('delete_file', args=(1,)), context, follow=True)
         branch = Branch.objects.get(id=1)
-        self.assertTrue(branch.get_commits() > size_before)
+        self.assertTrue(len(branch.get_commits()) > size_before)
         self.assertEqual(branch.get_commits()[0].log_message, 'File File 1 deleted')
