@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
     <h1>{{ branch.name }}</h1>
+
+    <h6>
+        <a href="{% url 'commits' branch.id %}">
+            {{branch.commit_set.all|length}} commits
+        </a>
+    </h6>
+
     <br>
 
     <ul class="list-group">
