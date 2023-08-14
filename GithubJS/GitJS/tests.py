@@ -677,3 +677,42 @@ class InitialTests(TestCase):
         self.client.post(reverse('toggle_issue', args=(1,)), context, follow=True)
         self.assertEqual(Issue.objects.get(id=1).state, 'OPEN')
         self.assertTrue(Issue.objects.get(id=1).milestone.get_percent() < percentage_before)
+
+    def test_get_commits(self):
+        branch = Branch.objects.get(id=1)
+
+        commits = branch.get_commits()
+        self.assertEqual(commits[0].log_message, 'Generic text for file 6')
+        self.assertEqual(commits[0].log_message, 'Generic text for file 2')
+        self.assertEqual(commits[0].log_message, 'Generic text for file 1')
+
+    def test_get_add_file_commit(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': 'New title', 'new_text': 'New text for a file'}
+        size_before = len(Branch.objects.get(id=2).get_commits())
+        self.client.post(reverse('add_file', args=(2,)), context, follow=True)
+        branch = Branch.objects.get(id=2)
+        self.assertTrue(branch.get_commits() > size_before)
+        self.assertEqual(branch.get_commits()[0].log_message, 'File New title added')
+
+    def test_get_edit_file_commit(self):
+        context = {'uname': 'user4', 'psw': 'user4'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': 'New title', 'new_text': 'New text for a file'}
+        self.client.post(reverse('edit_file', args=(1,)), context, follow=True)
+        commit = Branch.objects.get(id=1).get_commits()[0]
+        self.assertEqual(commit.log_message, 'File File 1 changed')
+        self.assertEqual(commit.committer, 'user4')
+
+    def test_delete_file_commit(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        size_before = len(Branch.objects.get(id=1).get_commits())
+        self.client.post(reverse('delete_file', args=(1,)), context, follow=True)
+        branch = Branch.objects.get(id=1)
+        self.assertTrue(branch.get_commits() > size_before)
+        self.assertEqual(branch.get_commits()[0].log_message, 'File File 1 deleted')
