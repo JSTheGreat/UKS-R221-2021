@@ -682,9 +682,9 @@ class InitialTests(TestCase):
         branch = Branch.objects.get(id=1)
 
         commits = branch.get_commits()
-        self.assertEqual(commits[0].log_message, 'File File 6 added')
-        self.assertEqual(commits[0].log_message, 'File File 2 added')
         self.assertEqual(commits[0].log_message, 'File File 1 added')
+        self.assertEqual(commits[0].log_message, 'File File 2 added')
+        self.assertEqual(commits[0].log_message, 'File File 6 added')
 
     def test_get_add_file_commit(self):
         context = {'uname': 'user1', 'psw': 'user1'}
