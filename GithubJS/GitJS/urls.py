@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views, project_views, branch_views, milestone_views, file_views, \
-    comment_and_reaction_views, issue_views
+    other_views, issue_views
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -35,13 +35,14 @@ urlpatterns = [
     path('add_contributor/<int:project_id>', project_views.add_contributor, name='add_contributor'),
     path('remove_contributor/<int:project_id>/<str:username>', project_views.remove_contributor,
          name='remove_contributor'),
-    path('add_comment/<int:project_id>', comment_and_reaction_views.add_comment, name='add_comment'),
-    path('toggle_reaction/<int:comment_id>/<str:reaction_type>', comment_and_reaction_views.toggle_reaction,
+    path('add_comment/<int:project_id>', other_views.add_comment, name='add_comment'),
+    path('toggle_reaction/<int:comment_id>/<str:reaction_type>', other_views.toggle_reaction,
          name='toggle_reaction'),
     path('issues/<int:project_id>/<str:state>', issue_views.get_issues, name='issues'),
     path('<int:project_id>/add_issue', issue_views.add_issue, name='add_issue'),
     path('edit_issue/<int:issue_id>', issue_views.edit_issue, name='edit_issue'),
     path('toggle_issue/<int:issue_id>', issue_views.toggle_issue_status, name='toggle_issue'),
     path('milestone_issues/<int:milestone_id>/<str:state>', issue_views.get_milestone_issues, name='milestone_issues'),
-    path('commits/<int:branch_id>', branch_views.get_commit_history, name='commits')
+    path('commits/<int:branch_id>', branch_views.get_commit_history, name='commits'),
+    path('pull_requests/<int:project_id>/<str:state>', other_views.view_pull_requests, name='pull_requests')
 ]

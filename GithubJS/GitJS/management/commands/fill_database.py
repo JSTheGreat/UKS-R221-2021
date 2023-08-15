@@ -7,7 +7,7 @@ import datetime
 
 from ...models import Project, Branch, GitUser, StarredProject,\
     WatchedProject, ProjectUpdate, Milestone, File, Contributor, \
-    Comment, Reaction, Issue, Commit
+    Comment, Reaction, Issue, Commit, PullRequest
 
 
 class Command(BaseCommand):
@@ -131,6 +131,51 @@ class Command(BaseCommand):
         b6.project = Project.objects.get(id=3)
         b6.save()
         b6.project.update_users(self._get_branch_message(b6))
+
+    def _add_pull_requests(self):
+        PullRequest.objects.all().delete()
+
+        pr1 = PullRequest(id=1, title="Pull req 1", description="Description for pull request no 1", state='OPEN')
+        pr1.source = Branch.objects.get(id=1)
+        pr1.target = Branch.objects.get(id=2)
+        pr1.project = Project.objects.get(id=1)
+        pr1.save()
+
+        pr2 = PullRequest(id=2, title="Pull req 2", description="Description for pull request no 2", state='OPEN')
+        pr2.source = Branch.objects.get(id=1)
+        pr2.target = Branch.objects.get(id=3)
+        pr2.project = Project.objects.get(id=1)
+        pr2.save()
+
+        pr3 = PullRequest(id=3, title="Merged req", description="Description for merged pull request", state='MERGED')
+        pr3.source = None
+        pr3.target = Branch.objects.get(id=1)
+        pr3.project = Project.objects.get(id=1)
+        pr3.save()
+
+        pr4 = PullRequest(id=4, title="Pull req 4", description="Description for pull request no 4", state='OPEN')
+        pr4.source = Branch.objects.get(id=6)
+        pr4.target = Branch.objects.get(id=5)
+        pr4.project = Project.objects.get(id=3)
+        pr4.save()
+
+        pr5 = PullRequest(id=5, title="Closed pr 1", description="Description for pull request no 5", state='CLOSED')
+        pr5.source = Branch.objects.get(id=5)
+        pr5.target = Branch.objects.get(id=6)
+        pr5.project = Project.objects.get(id=3)
+        pr5.save()
+
+        pr6 = PullRequest(id=6, title="Closed pr 2", description="Description for pull request no 6", state='CLOSED')
+        pr6.source = Branch.objects.get(id=2)
+        pr6.target = Branch.objects.get(id=3)
+        pr6.project = Project.objects.get(id=1)
+        pr6.save()
+
+        pr7 = PullRequest(id=7, title="Merged 2", description="Description for old merged pr", state='MERGED')
+        pr7.source = None
+        pr7.target = None
+        pr7.project = Project.objects.get(id=3)
+        pr7.save()
 
     def _add_milestones(self):
         Milestone.objects.all().delete()
@@ -359,6 +404,7 @@ class Command(BaseCommand):
         self._add_users()
         self._add_projects()
         self._add_branches()
+        self._add_pull_requests()
         self._add_milestones()
         self._add_files()
         self._add_comments()

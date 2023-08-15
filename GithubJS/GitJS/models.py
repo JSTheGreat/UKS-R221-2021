@@ -58,6 +58,17 @@ class Project(models.Model):
         issues = Issue.objects.filter(project=self, state=state)
         return issues
 
+    def get_pull_requests(self, state):
+        pull_requests = []
+        if state == 'OPEN':
+            pull_requests = PullRequest.objects.filter(project=self, state=state)
+        else:
+            all_requests = PullRequest.objects.filter(project=self)
+            for req in all_requests:
+                if req.state == 'CLOSED' or req.state == 'MERGED':
+                    pull_requests.append(req)
+        return pull_requests
+
     def get_contributors(self):
         contributors = Contributor.objects.filter(project_id=self.id)
         return contributors
@@ -177,3 +188,13 @@ class Commit(models.Model):
     date_time = models.DateTimeField("date committed")
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
     committer = models.CharField(max_length=100)
+
+
+class PullRequest(models.Model):
+    state = models.CharField(max_length=7)
+    title = models.CharField(max_length=100)
+    description = models.CharField(max_length=200)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    issue = models.ForeignKey(Issue, null=True, on_delete=models.SET_NULL)
+    source = models.ForeignKey(Branch, null=True, on_delete=models.SET_NULL, related_name='source')
+    target = models.ForeignKey(Branch, null=True, on_delete=models.SET_NULL, related_name='target')

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ title }}</h1>
+
+    <br>
+    <div>
+        <a href="{% url 'pull_requests' project_id 'OPEN' %}">
+            <button class="btn btn-primary">OPEN</button>
+        </a>
+        <a href="{% url 'pull_requests' project_id 'CLOSED' %}">
+            <button class="btn btn-secondary">CLOSED</button>
+        </a>
+    </div>
+    <br><br>
+    <ul class="list-group">
+    {% for pr in pull_requests %}
+        <div class="list-group">
+        <a class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+              <h5>{{pr.title}}</h5>
+              {% if pr.target and pr.source %}
+                <small>{{pr.target.name}} <- {{pr.source.name}}</small>
+              {% else %}
+                <small>{{pr.state}}</small>
+              {% endif %}
+            </div>
+            {% if pr.issue %}
+                <p class="mb-1">Issue: {{pr.issue}}</p>
+            {% endif %}
+        </a>
+    </div>
+    {% endfor %}
+    </ul>
+
+    <br>
+    <a>
+        <button class="btn btn-success">Add pull request</button>
+    </a>
+
+{% endblock %}

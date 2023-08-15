@@ -36,6 +36,10 @@
             <button class="btn btn-secondary">Milestones</button>
         </a>
 
+        <a href="{% url 'pull_requests' project.id 'OPEN' %}">
+            <button class="btn btn-secondary">Pull requests</button>
+        </a>
+
         {% if project.lead.username == user.username %}
         <a class="ms-5" href="{% url 'contributors' project.id %}">
             <button class="btn btn-info">Contributors</button>

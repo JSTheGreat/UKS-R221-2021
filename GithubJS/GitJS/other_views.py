@@ -58,3 +58,12 @@ def toggle_reaction(request, comment_id, reaction_type):
             existing_reaction.save()
         return render(request, "project_view.html", {"project": comment.project, "title": comment.project.title,
                                                      'comments': comment.project.get_comments(request.user.username)})
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_view', raise_exception=True)
+def view_pull_requests(request, project_id, state):
+    project = get_object_or_404(Project, id=project_id)
+    return render(request, 'pull_requests.html', {'title': 'Pull requests for ' + project.title,
+                                                  'project_id': project_id,
+                                                  'pull_requests': project.get_pull_requests(state)})
