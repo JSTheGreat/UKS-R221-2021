@@ -96,6 +96,8 @@ def add_pull_request(request, project_id):
             error_message = "Source branch must be chosen"
         elif target_branch == '':
             error_message = "Target branch must be chosen"
+        elif target_branch == source_branch:
+            error_message = "Source and target branch can't be the same"
 
         if error_message:
             return render(request, "pr_form.html", {"error_message": error_message, 'input_issue': '',
@@ -123,4 +125,87 @@ def add_pull_request(request, project_id):
         new_pr.target = Branch.objects.get(name=target_branch)
         new_pr.save()
 
+        new_pr.project.update_users('New pull request added!')
+
         return HttpResponseRedirect(reverse("pull_requests", args=(project_id, 'OPEN', )))
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_edit', raise_exception=True)
+def edit_pull_request(request, pr_id):
+    pull_request = get_object_or_404(PullRequest, id=pr_id)
+    issue_title = pull_request.issue.title if pull_request.issue is not None else 'None'
+    if request.method == 'GET':
+        return render(request, "pr_form.html", {"title": "Pull request #"+str(pr_id),
+                                                "input_title": pull_request.title,
+                                                "input_desc": pull_request.description,
+                                                "source_branch": pull_request.source.name,
+                                                "target_branch": pull_request.target.name,
+                                                'input_issue': issue_title,
+                                                'branches': pull_request.project.get_branches(),
+                                                'issues': pull_request.project.get_issues('OPEN'),
+                                                'form_action': 'edit_pull_request/'+str(pr_id)})
+    else:
+        new_title = request.POST['new_title'].strip()
+        new_desc = request.POST['new_desc'].strip()
+        new_issue = request.POST['new_issue']
+        source_branch = request.POST['source_branch']
+        target_branch = request.POST['target_branch']
+
+        error_message = ''
+        if new_title == '':
+            error_message = "Title can't be empty"
+        elif source_branch == '':
+            error_message = "Source branch must be chosen"
+        elif target_branch == '':
+            error_message = "Target branch must be chosen"
+        elif target_branch == source_branch:
+            error_message = "Source and target branch can't be the same"
+
+        if error_message:
+            return render(request, "pr_form.html", {"error_message": error_message,
+                                                    "title": "Pull request #" + str(pr_id),
+                                                    "input_title": pull_request.title,
+                                                    "input_desc": pull_request.description,
+                                                    "source_branch": pull_request.source.name,
+                                                    "target_branch": pull_request.target.name,
+                                                    'input_issue': issue_title,
+                                                    'branches': pull_request.project.get_branches(),
+                                                    'issues': pull_request.project.get_issues('OPEN'),
+                                                    'form_action': 'edit_pull_request/' + str(pr_id)})
+        existing_pr = PullRequest.objects.filter(project=pull_request.project, title=new_title)
+        if len(existing_pr) > 0:
+            if existing_pr[0].id != pr_id:
+                error_message = 'Pull request with given title already exists'
+                return render(request, "pr_form.html", {"error_message": error_message,
+                                                        "title": "Pull request #" + str(pr_id),
+                                                        "input_title": pull_request.title,
+                                                        "input_desc": pull_request.description,
+                                                        "source_branch": pull_request.source.name,
+                                                        "target_branch": pull_request.target.name,
+                                                        'input_issue': issue_title,
+                                                        'branches': pull_request.project.get_branches(),
+                                                        'issues': pull_request.project.get_issues('OPEN'),
+                                                        'form_action': 'edit_pull_request/' + str(pr_id)})
+
+        pull_request.project.update_users('Pull request ' + pull_request.title + ' changed!')
+
+        if new_issue != 'None':
+            pull_request.issue = Issue.objects.get(title=new_issue)
+        else:
+            pull_request.issue = None
+        pull_request.title = new_title
+        pull_request.description = new_desc
+        pull_request.source = Branch.objects.get(name=source_branch)
+        pull_request.target = Branch.objects.get(name=target_branch)
+        pull_request.save()
+
+        return HttpResponseRedirect(reverse("pull_requests", args=(pull_request.project.id, 'OPEN', )))
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_edit', raise_exception=True)
+def delete_pull_request(request, pr_id):
+    pull_request = get_object_or_404(PullRequest, id=pr_id)
+    pull_request.delete()
+    return HttpResponseRedirect(reverse("pull_requests", args=(pull_request.project.id, 'OPEN', )))

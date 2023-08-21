@@ -27,6 +27,17 @@
             {% if pr.issue %}
                 <p class="mb-1">Issue: {{pr.issue.title}}</p>
             {% endif %}
+            <small>
+                <a>
+                    <button class="btn btn-primary">Merge</button>
+                </a>
+                <a href="{% url 'edit_pull_request' pr.id %}">
+                    <button class="btn btn-warning">Edit</button>
+                </a>
+                <a href="{% url 'delete_pull_request' pr.id %}">
+                    <button class="btn btn-danger">Delete</button>
+                </a>
+            </small>
         </a>
     </div>
     {% endfor %}
