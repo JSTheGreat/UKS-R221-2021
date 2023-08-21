@@ -44,5 +44,6 @@ urlpatterns = [
     path('toggle_issue/<int:issue_id>', issue_views.toggle_issue_status, name='toggle_issue'),
     path('milestone_issues/<int:milestone_id>/<str:state>', issue_views.get_milestone_issues, name='milestone_issues'),
     path('commits/<int:branch_id>', branch_views.get_commit_history, name='commits'),
-    path('pull_requests/<int:project_id>/<str:state>', other_views.view_pull_requests, name='pull_requests')
+    path('pull_requests/<int:project_id>/<str:state>', other_views.view_pull_requests, name='pull_requests'),
+    path('<int:project_id>/add_pull_request', other_views.add_pull_request, name='add_pull_request')
 ]

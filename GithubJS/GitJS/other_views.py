@@ -1,8 +1,10 @@
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 
-from .models import Project, Comment, GitUser, Reaction
+from .models import Project, Comment, GitUser, Reaction, PullRequest, Issue, Branch
 
 
 @login_required(login_url='login/')
@@ -67,3 +69,58 @@ def view_pull_requests(request, project_id, state):
     return render(request, 'pull_requests.html', {'title': 'Pull requests for ' + project.title,
                                                   'project_id': project_id,
                                                   'pull_requests': project.get_pull_requests(state)})
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_edit', raise_exception=True)
+def add_pull_request(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    if request.method == 'GET':
+        return render(request, "pr_form.html", {"title": "New pull request", "input_title": "",
+                                                "input_desc": "", "source_branch": "", "target_branch": "",
+                                                'input_issue': '',
+                                                'branches': project.get_branches(),
+                                                'issues': project.get_issues('OPEN'),
+                                                'form_action': str(project_id)+'/add_pull_request'})
+    else:
+        new_title = request.POST['new_title'].strip()
+        new_desc = request.POST['new_desc'].strip()
+        new_issue = request.POST['new_issue']
+        source_branch = request.POST['source_branch']
+        target_branch = request.POST['target_branch']
+
+        error_message = ''
+        if new_title == '':
+            error_message = "Title can't be empty"
+        elif source_branch == '':
+            error_message = "Source branch must be chosen"
+        elif target_branch == '':
+            error_message = "Target branch must be chosen"
+
+        if error_message:
+            return render(request, "pr_form.html", {"error_message": error_message, 'input_issue': '',
+                                                    "title": "New pull request", "input_title": "",
+                                                    "input_desc": "", "source_branch": "", "target_branch": "",
+                                                    'branches': project.get_branches(),
+                                                    'issues': project.get_issues('OPEN'),
+                                                    'form_action': str(project_id)+'/add_pull_request'})
+
+        existing_pr = PullRequest.objects.filter(project=project, title=new_title)
+        if len(existing_pr) > 0:
+            error_message = 'Pull request with given title already exists'
+            return render(request, "pr_form.html", {"error_message": error_message, 'input_issue': '',
+                                                    "title": "New pull request", "input_title": "",
+                                                    "input_desc": "", "source_branch": "", "target_branch": "",
+                                                    'branches': project.get_branches(),
+                                                    'issues': project.get_issues('OPEN'),
+                                                    'form_action': str(project_id)+'/add_pull_request'})
+
+        new_id = PullRequest.objects.all().order_by('-id')[0].id + 1
+        new_pr = PullRequest(id=new_id, project=project, title=new_title, description=new_desc, state='OPEN')
+        if new_issue != 'None':
+            new_pr.issue = Issue.objects.get(title=new_issue)
+        new_pr.source = Branch.objects.get(name=source_branch)
+        new_pr.target = Branch.objects.get(name=target_branch)
+        new_pr.save()
+
+        return HttpResponseRedirect(reverse("pull_requests", args=(project_id, 'OPEN', )))

@@ -44,6 +44,10 @@ class Project(models.Model):
         branches = Branch.objects.filter(project=self)
         return len(branches)
 
+    def get_branches(self):
+        branches = Branch.objects.filter(project=self)
+        return branches
+
     def update_users(self, message):
         for watched in WatchedProject.objects.filter(project_id=self.id):
             new_date = timezone.now()

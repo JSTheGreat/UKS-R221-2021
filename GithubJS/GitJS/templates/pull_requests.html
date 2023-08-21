@@ -25,7 +25,7 @@
               {% endif %}
             </div>
             {% if pr.issue %}
-                <p class="mb-1">Issue: {{pr.issue}}</p>
+                <p class="mb-1">Issue: {{pr.issue.title}}</p>
             {% endif %}
         </a>
     </div>
@@ -33,7 +33,7 @@
     </ul>
 
     <br>
-    <a>
+    <a href="{% url 'add_pull_request' project_id %}">
         <button class="btn btn-success">Add pull request</button>
     </a>
 
