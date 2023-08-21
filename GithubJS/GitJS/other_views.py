@@ -205,7 +205,11 @@ def edit_pull_request(request, pr_id):
 
 @login_required(login_url='login/')
 @permission_required('GitJS.can_edit', raise_exception=True)
-def delete_pull_request(request, pr_id):
+def toggle_request_state(request, pr_id):
     pull_request = get_object_or_404(PullRequest, id=pr_id)
-    pull_request.delete()
+    if pull_request.state == 'OPEN':
+        pull_request.state = 'CLOSED'
+    else:
+        pull_request.state = 'OPEN'
+    pull_request.save()
     return HttpResponseRedirect(reverse("pull_requests", args=(pull_request.project.id, 'OPEN', )))

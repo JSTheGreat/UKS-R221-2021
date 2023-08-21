@@ -28,15 +28,21 @@
                 <p class="mb-1">Issue: {{pr.issue.title}}</p>
             {% endif %}
             <small>
-                <a>
-                    <button class="btn btn-primary">Merge</button>
-                </a>
-                <a href="{% url 'edit_pull_request' pr.id %}">
-                    <button class="btn btn-warning">Edit</button>
-                </a>
-                <a href="{% url 'delete_pull_request' pr.id %}">
-                    <button class="btn btn-danger">Delete</button>
-                </a>
+                {% if pr.state == 'OPEN' %}
+                    <a>
+                        <button class="btn btn-primary">Merge</button>
+                    </a>
+                    <a href="{% url 'edit_pull_request' pr.id %}">
+                        <button class="btn btn-warning">Edit</button>
+                    </a>
+                    <a href="{% url 'toggle_request_state' pr.id %}">
+                        <button class="btn btn-danger">Close</button>
+                    </a>
+                {% elif pr.state == 'CLOSED' %}
+                    <a href="{% url 'toggle_request_state' pr.id %}">
+                        <button class="btn btn-info">Reopen</button>
+                    </a>
+                {% endif %}
             </small>
         </a>
     </div>
