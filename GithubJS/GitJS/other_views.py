@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 
-from .models import Project, Comment, GitUser, Reaction, PullRequest, Issue, Branch
+from .models import Project, Comment, GitUser, Reaction, PullRequest, Issue, Branch, Commit
 
 
 @login_required(login_url='login/')
@@ -213,3 +213,30 @@ def toggle_request_state(request, pr_id):
         pull_request.state = 'OPEN'
     pull_request.save()
     return HttpResponseRedirect(reverse("pull_requests", args=(pull_request.project.id, 'OPEN', )))
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_view', raise_exception=True)
+def get_merge_changes(request, pr_id):
+    pull_request = get_object_or_404(PullRequest, id=pr_id)
+    differences = pull_request.get_differences()
+    return render(request, 'merge_changes.html', {'title': 'Changes for PR#'+str(pr_id),
+                                                  'changes': differences, 'pr_id': pr_id})
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_edit', raise_exception=True)
+def merge_request(request, pr_id):
+    pull_request = get_object_or_404(PullRequest, id=pr_id)
+    pull_request.merge_branches()
+    new_commit_id = Commit.objects.all().order_by('-id')[0].id + 1
+    commit = Commit(id=new_commit_id, branch=pull_request.target, committer=request.user.username,
+                    date_time=timezone.now())
+    commit.log_message = 'Merged from ' + pull_request.source.name
+    commit.save()
+    project_id = pull_request.project.id
+    pull_request.state = 'MERGED'
+    pull_request.source = None
+    pull_request.target = None
+    pull_request.save()
+    return HttpResponseRedirect(reverse("pull_requests", args=(project_id, 'OPEN',)))

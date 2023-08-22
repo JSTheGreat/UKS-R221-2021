@@ -47,5 +47,7 @@ urlpatterns = [
     path('pull_requests/<int:project_id>/<str:state>', other_views.view_pull_requests, name='pull_requests'),
     path('<int:project_id>/add_pull_request', other_views.add_pull_request, name='add_pull_request'),
     path('edit_pull_request/<int:pr_id>', other_views.edit_pull_request, name='edit_pull_request'),
-    path('toggle_request_state/<int:pr_id>', other_views.toggle_request_state, name='toggle_request_state')
+    path('toggle_request_state/<int:pr_id>', other_views.toggle_request_state, name='toggle_request_state'),
+    path('get_merge_changes/<int:pr_id>', other_views.get_merge_changes, name='get_merge_changes'),
+    path('merge_request/<int:pr_id>', other_views.merge_request, name='merge_request')
 ]

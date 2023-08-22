@@ -15,7 +15,8 @@
     <ul class="list-group">
     {% for pr in pull_requests %}
         <div class="list-group">
-        <a class="list-group-item list-group-item-action flex-column align-items-start">
+        <a href="{% url 'get_merge_changes' pr.id %}"
+           class="list-group-item list-group-item-action flex-column align-items-start">
             <div class="d-flex w-100 justify-content-between">
               <h5>{{pr.title}}</h5>
               {% if pr.target and pr.source %}
@@ -29,9 +30,6 @@
             {% endif %}
             <small>
                 {% if pr.state == 'OPEN' %}
-                    <a>
-                        <button class="btn btn-primary">Merge</button>
-                    </a>
                     <a href="{% url 'edit_pull_request' pr.id %}">
                         <button class="btn btn-warning">Edit</button>
                     </a>

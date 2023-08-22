@@ -141,6 +141,16 @@ class Branch(models.Model):
         commits = Commit.objects.filter(branch=self).order_by('-date_time')
         return commits
 
+    def get_files(self):
+        files = File.objects.filter(branch=self)
+        return files
+
+    def get_file_by_title(self, title):
+        found = File.objects.filter(branch=self, title=title)
+        if len(found) == 0:
+            return None
+        return found[0]
+
 
 class Milestone(models.Model):
     title = models.CharField(max_length=100)
@@ -202,3 +212,29 @@ class PullRequest(models.Model):
     issue = models.ForeignKey(Issue, null=True, on_delete=models.SET_NULL)
     source = models.ForeignKey(Branch, null=True, on_delete=models.SET_NULL, related_name='source')
     target = models.ForeignKey(Branch, null=True, on_delete=models.SET_NULL, related_name='target')
+
+    def get_differences(self):
+        different_files = self.source.get_files()
+        differences = []
+        for different in different_files:
+            if self.target.get_file_by_title(different.title):
+                target_file = self.target.get_file_by_title(different.title)
+                differences.append([target_file.text, different.text])
+            else:
+                differences.append(['', different.text])
+        return differences
+
+    def merge_branches(self):
+        source_files = self.source.get_files()
+        new_files = []
+        new_id = File.objects.all().order_by('-id')[0].id + 1
+        for file in source_files:
+            if self.target.get_file_by_title(file.title):
+                changed = File.objects.get(title=file.title, branch=self.target)
+                changed.text = file.text
+                changed.save()
+            else:
+                new_file = File(id=new_id, title=file.title, text=file.text, branch=self.target)
+                new_files.append(new_file)
+                new_id += 1
+        File.objects.bulk_create(new_files)
