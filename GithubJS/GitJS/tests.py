@@ -758,11 +758,13 @@ class InitialTests(TestCase):
     def test_get_file_by_title(self):
         branch = Branch.objects.get(id=1)
         self.assertEqual(branch.get_file_by_title('File 1').title, 'File 1')
+        self.assertEqual(branch.get_file_by_title('File 1').text, 'Generic text for file 1 on branch 1')
         self.assertEqual(branch.get_file_by_title('File 2').title, 'File 2')
         self.assertIsNone(branch.get_file_by_title('File 3'))
 
         branch = Branch.objects.get(id=2)
         self.assertEqual(branch.get_file_by_title('File 1').title, 'File 1')
+        self.assertEqual(branch.get_file_by_title('File 1').text, 'Generic text for file 1 on branch 2')
         self.assertIsNone(branch.get_file_by_title('File 2'))
 
     def test_get_differences(self):
