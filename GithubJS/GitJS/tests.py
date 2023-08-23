@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .management.commands.fill_database import Command
-from .models import Project, GitUser, Branch, Milestone, File, Comment, Reaction, Issue
+from .models import Project, GitUser, Branch, Milestone, File, Comment, Reaction, Issue, PullRequest
 
 
 class InitialTests(TestCase):
@@ -423,7 +423,7 @@ class InitialTests(TestCase):
         self.assertNotEqual(file_before.title, file_after.title)
         self.assertNotEqual(file_before.text, file_after.text)
 
-        context = {'new_title': 'File 2', 'new_text': 'Generic text for file 2'}
+        context = {'new_title': 'File 2', 'new_text': 'Generic text for file 2 on branch 2'}
         file_before = File.objects.get(id=3)
         self.client.post(reverse('edit_file', args=(3,)), context, follow=True)
         file_after = File.objects.get(id=3)
@@ -716,3 +716,78 @@ class InitialTests(TestCase):
         branch = Branch.objects.get(id=1)
         self.assertTrue(len(branch.get_commits()) > size_before)
         self.assertEqual(branch.get_commits()[0].log_message, 'File File 1 deleted')
+
+    def test_get_branches(self):
+        project = Project.objects.get(id=1)
+        branches = project.get_branches()
+        self.assertEqual(len(branches), 3)
+        self.assertEqual(branches[0].name, 'Branch 1')
+        self.assertEqual(branches[1].name, 'Branch 2')
+        self.assertEqual(branches[2].name, 'Branch 3')
+
+        project = Project.objects.get(id=3)
+        branches = project.get_branches()
+        self.assertEqual(len(branches), 2)
+        self.assertEqual(branches[0].name, 'Branch 5')
+        self.assertEqual(branches[1].name, 'Branch 6')
+
+    def test_get_pull_requests(self):
+        project = Project.objects.get(id=1)
+        open_requests = project.get_pull_requests('OPEN')
+        other_requests = project.get_pull_requests('CLOSED')
+
+        self.assertEqual(len(open_requests), 2)
+        self.assertEqual(open_requests[0].title, 'Pull req 1')
+
+        self.assertEqual(len(other_requests), 2)
+        self.assertEqual(other_requests[0].title, 'Merged req')
+        self.assertEqual(other_requests[1].title, 'Closed pr 2')
+
+    def test_get_files(self):
+        branch = Branch.objects.get(id=1)
+        files = branch.get_files()
+        self.assertEqual(len(files), 3)
+        self.assertEqual(files[0].title, 'File 1')
+        self.assertEqual(files[2].title, 'File 6')
+
+        branch = Branch.objects.get(id=2)
+        files = branch.get_files()
+        self.assertEqual(len(files), 1)
+        self.assertEqual(files[0].title, 'File 1')
+
+    def test_get_file_by_title(self):
+        branch = Branch.objects.get(id=1)
+        self.assertEqual(branch.get_file_by_title('File 1').title, 'File 1')
+        self.assertEqual(branch.get_file_by_title('File 2').title, 'File 2')
+        self.assertIsNone(branch.get_file_by_title('File 3'))
+
+        branch = Branch.objects.get(id=2)
+        self.assertEqual(branch.get_file_by_title('File 1').title, 'File 1')
+        self.assertIsNone(branch.get_file_by_title('File 2'))
+
+    def test_get_differences(self):
+        pr = PullRequest.objects.get(id=1)
+        differences = pr.get_differences()
+
+        self.assertEqual(differences[0][0], 'Generic text for file 1 on branch 2')
+        self.assertEqual(differences[0][1], 'Generic text for file 1 on branch 1')
+
+        self.assertEqual(differences[1][0], differences[2][0])
+        self.assertEqual(differences[1][1], 'Generic text for file 2 on branch 1')
+        self.assertEqual(differences[2][1], 'Generic text for file 6 on branch 1')
+
+    def test_merge_branches(self):
+        pr = PullRequest.objects.get(id=1)
+        branch_before = Branch.objects.get(id=2)
+        self.assertEqual(len(branch_before.get_files()), 1)
+        self.assertEqual(branch_before.get_files()[0].title, 'Generic text for file 1 on branch 2')
+        self.assertIsNone(branch_before.get_file_by_title('File 2'))
+        self.assertIsNone(branch_before.get_file_by_title('File 6'))
+
+        pr.merge_branches()
+
+        branch_after = Branch.objects.get(id=2)
+        self.assertEqual(len(branch_after.get_files()), 3)
+        self.assertEqual(branch_after.get_files()[0].title, 'Generic text for file 1 on branch 1')
+        self.assertIsNotNone(branch_after.get_file_by_title('File 2'))
+        self.assertIsNotNone(branch_after.get_file_by_title('File 6'))
