@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 
 from .management.commands.fill_database import Command
-from .models import Project, GitUser, Branch, Milestone, File, Comment, Reaction, Issue, PullRequest
+from .models import Project, GitUser, Branch, Milestone, File, Comment, Reaction, Issue, PullRequest, Commit
 
 
 class InitialTests(TestCase):
@@ -911,3 +911,25 @@ class InitialTests(TestCase):
         open_requests_before = len(PullRequest.objects.filter(state='OPEN', project=project))
         self.client.post(reverse('toggle_request_state', args=(1,)), context, follow=True)
         self.assertTrue(len(PullRequest.objects.filter(state='OPEN', project=project)) > open_requests_before)
+
+    def test_merge_request(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        pull_request = PullRequest.objects.get(id=1)
+        self.assertEqual(pull_request.state, 'OPEN')
+        self.assertEqual(pull_request.issue.state, 'OPEN')
+        self.assertIsNotNone(pull_request.target)
+        self.assertIsNotNone(pull_request.source)
+        commits_before = len(Commit.objects.get(branch=pull_request.target))
+        files_before = len(File.objects.get(branch=pull_request.target))
+
+        self.client.post(reverse('merge_request', args=(1,)), context, follow=True)
+
+        pull_request = PullRequest.objects.get(id=1)
+        self.assertEqual(pull_request.state, 'MERGED')
+        self.assertEqual(pull_request.issue.state, 'CLOSED')
+        self.assertIsNone(pull_request.target)
+        self.assertIsNone(pull_request.source)
+        self.assertTrue(len(Commit.objects.get(branch=pull_request.target)) > commits_before)
+        self.assertTrue(len(File.objects.get(branch=pull_request.target)) > files_before)
