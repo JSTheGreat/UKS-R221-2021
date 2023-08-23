@@ -921,8 +921,9 @@ class InitialTests(TestCase):
         self.assertEqual(pull_request.issue.state, 'OPEN')
         self.assertIsNotNone(pull_request.target)
         self.assertIsNotNone(pull_request.source)
-        commits_before = len(Commit.objects.filter(branch=pull_request.target))
-        files_before = len(File.objects.filter(branch=pull_request.target))
+        branch = Branch.objects.get(id=pull_request.target.id)
+        commits_before = len(Commit.objects.filter(branch=branch))
+        files_before = len(File.objects.filter(branch=branch))
 
         self.client.post(reverse('merge_request', args=(1,)), context, follow=True)
 
@@ -931,5 +932,5 @@ class InitialTests(TestCase):
         self.assertEqual(pull_request.issue.state, 'CLOSED')
         self.assertIsNone(pull_request.target)
         self.assertIsNone(pull_request.source)
-        self.assertTrue(len(Commit.objects.filter(branch=pull_request.target)) > commits_before)
-        self.assertTrue(len(File.objects.filter(branch=pull_request.target)) > files_before)
+        self.assertTrue(len(Commit.objects.filter(branch=branch)) > commits_before)
+        self.assertTrue(len(File.objects.filter(branch=branch)) > files_before)
