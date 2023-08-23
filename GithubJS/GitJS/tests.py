@@ -806,7 +806,7 @@ class InitialTests(TestCase):
         self.assertTrue(len(PullRequest.objects.filter(state='OPEN', project=project)) > pr_size_before)
 
         pr_size_before = len(PullRequest.objects.filter(state='OPEN', project=project))
-        context = {'new_title': 'New pull request', 'new_desc': '', 'new_issue': 'Issue 1',
+        context = {'new_title': 'New pull request #2', 'new_desc': '', 'new_issue': 'Issue 1',
                    'source_branch': 'Branch 3', 'target_branch': 'Branch 1'}
         self.client.post(reverse('add_pull_request', args=(1,)), context, follow=True)
         self.assertTrue(len(PullRequest.objects.filter(state='OPEN', project=project)) > pr_size_before)
@@ -852,7 +852,8 @@ class InitialTests(TestCase):
         pull_request_after = PullRequest.objects.get(id=1)
         self.assertNotEqual(pull_request_before.title, pull_request_after.title)
         self.assertNotEqual(pull_request_before.description, pull_request_after.description)
-        self.assertNotEqual(pull_request_before.issue.title, pull_request_after.issue.title)
+        self.assertIsNotNone(pull_request_before.issue)
+        self.assertIsNone(pull_request_after.issue)
         self.assertNotEqual(pull_request_before.source.name, pull_request_after.source.name)
         self.assertNotEqual(pull_request_before.target.name, pull_request_after.target.name)
 
@@ -864,7 +865,8 @@ class InitialTests(TestCase):
         pull_request_after = PullRequest.objects.get(id=1)
         self.assertNotEqual(pull_request_before.title, pull_request_after.title)
         self.assertNotEqual(pull_request_before.description, pull_request_after.description)
-        self.assertNotEqual(pull_request_before.issue.title, pull_request_after.issue.title)
+        self.assertIsNone(pull_request_before.issue)
+        self.assertIsNotNone(pull_request_after.issue)
         self.assertNotEqual(pull_request_before.source.name, pull_request_after.source.name)
         self.assertNotEqual(pull_request_before.target.name, pull_request_after.target.name)
 
