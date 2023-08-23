@@ -40,7 +40,7 @@ docker pull jsthegreat/uks-js
 # To setup the environment and run the Django app, execute the following command:
 docker-compose up
 
-# It is possible to order the docker-compose to build uks_tim5_web the container:
+# It is possible to order the docker-compose to build uks_js_web the container:
 docker-compose up --build
 
 # If all containers should be recreated, then execute:

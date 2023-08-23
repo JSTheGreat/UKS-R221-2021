@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+    <ul class="list-group">
+        {% for contributor in contributors %}
+        <li class="list-group-item">
+            {{contributor.username}}
+            <a href="{% url 'remove_contributor' contributor.project_id contributor.username %}">
+                <button class="btn btn-danger">Remove</button>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    <br><br>
+    <form action="/{{form_action}}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        <select class="form-control" name="new_contributor">
+            {% for other in other_users %}
+            <option>{{other}}</option>
+            {% endfor %}
+        </select>
+    </fieldset>
+        <button type="submit" class="btn btn-success">Add contributor</button>
+    </form>
+{% endblock %}

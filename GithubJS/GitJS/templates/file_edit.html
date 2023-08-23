@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2>{{project.title}} - {{title}}</h2>
-    <br>
     <form action="/{{form_action}}" method="post">
     {% csrf_token %}
     <fieldset>
         {% if error_message %}<p class="error"><strong>{{ error_message }}</strong></p>{% endif %}
-        <label for="new_branch">Branch name</label><br>
-        <input type="text" name="new_branch" id="new_branch" value="{{input_value}}">
+        <label for="new_title">Name</label><br>
+        <input type="text" name="new_title" id="new_title" class="form-control" value="{{file_title}}" required/>
+        <br><br>
+        <label for="new_text">Content</label><br>
+        <textarea name="new_text" id="new_text" class="form-control">{{file_text}}</textarea>
     </fieldset>
         <br>
-    {% if input_value == '' %}
+    {% if file_title == '' %}
         <input type="submit" value="Add" class="btn btn-success">
     {% else %}
         <input type="submit" value="Change" class="btn btn-warning">

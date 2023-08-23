@@ -3,8 +3,11 @@ from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
 from django.utils import timezone
 
+import datetime
+
 from ...models import Project, Branch, GitUser, StarredProject,\
-    WatchedProject, ProjectUpdate
+    WatchedProject, ProjectUpdate, Milestone, File, Contributor, \
+    Comment, Reaction, Issue, Commit, PullRequest
 
 
 class Command(BaseCommand):
@@ -41,6 +44,13 @@ class Command(BaseCommand):
         user2.groups.add(group2)
         user3 = GitUser.objects.create_user("user3", "user3@mailinator.com", "user3")
 
+        user4 = GitUser.objects.create_user("user4", "user4@mailinator.com", "user4")
+        user4.groups.add(group1)
+        user5 = GitUser.objects.create_user("user5", "user5@mailinator.com", "user5")
+        user5.groups.add(group2)
+        user6 = GitUser.objects.create_user("user6", "user6@mailinator.com", "user6")
+        user6.groups.add(group1)
+
         user1.save()
         user2.save()
         user3.save()
@@ -53,19 +63,28 @@ class Command(BaseCommand):
         wp = WatchedProject(id=item_id, user_id=user_id, project_id=project_id)
         wp.save()
 
+    def _add_contributor(self, item_id, username, project_id):
+        c = Contributor(id=item_id, username=username, project_id=project_id)
+        c.save()
+
     def _add_projects(self):
         Project.objects.all().delete()
         StarredProject.objects.all().delete()
         WatchedProject.objects.all().delete()
         ProjectUpdate.objects.all().delete()
+        Contributor.objects.all().delete()
 
         p1 = Project(id=1, title="Project 1")
         p1.lead = GitUser.objects.get_by_natural_key("user1")
         p1.save()
 
         p2 = Project(id=2, title="Project 2")
-        p2.lead = GitUser.objects.get_by_natural_key("user2")
+        p2.lead = GitUser.objects.get_by_natural_key("user5")
         p2.save()
+
+        p3 = Project(id=3, title="Project 3")
+        p3.lead = GitUser.objects.get_by_natural_key("user6")
+        p3.save()
 
         self._add_starred(1, p2.lead.pk, p1.id)
         self._add_starred(2, p1.lead.pk, p2.id)
@@ -73,9 +92,9 @@ class Command(BaseCommand):
         self._add_watched(1, p1.lead.pk, p1.id)
         self._add_watched(2, p2.lead.pk, p1.id)
 
-        p3 = Project(id=3, title="Project 3")
-        p3.lead = GitUser.objects.get_by_natural_key("user3")
-        p3.save()
+        self._add_contributor(1, GitUser.objects.get_by_natural_key("user4").username, p1.id)
+        self._add_contributor(2, GitUser.objects.get_by_natural_key("user5").username, p1.id)
+        self._add_contributor(3, GitUser.objects.get_by_natural_key("user6").username, p2.id)
 
     def _get_branch_message(self, branch):
         return 'Branch ' + branch.name + ' added to project ' + branch.project.title
@@ -113,7 +132,282 @@ class Command(BaseCommand):
         b6.save()
         b6.project.update_users(self._get_branch_message(b6))
 
+    def _add_pull_requests(self):
+        PullRequest.objects.all().delete()
+
+        pr1 = PullRequest(id=1, title="Pull req 1", description="Description for pull request no 1", state='OPEN')
+        pr1.source = Branch.objects.get(id=1)
+        pr1.target = Branch.objects.get(id=2)
+        pr1.project = Project.objects.get(id=1)
+        pr1.issue = Issue.objects.get(id=1)
+        pr1.save()
+
+        pr2 = PullRequest(id=2, title="Pull req 2", description="Description for pull request no 2", state='OPEN')
+        pr2.source = Branch.objects.get(id=1)
+        pr2.target = Branch.objects.get(id=3)
+        pr2.project = Project.objects.get(id=1)
+        pr2.save()
+
+        pr3 = PullRequest(id=3, title="Merged req", description="Description for merged pull request", state='MERGED')
+        pr3.source = None
+        pr3.target = Branch.objects.get(id=1)
+        pr3.project = Project.objects.get(id=1)
+        pr3.save()
+
+        pr4 = PullRequest(id=4, title="Pull req 4", description="Description for pull request no 4", state='OPEN')
+        pr4.source = Branch.objects.get(id=6)
+        pr4.target = Branch.objects.get(id=5)
+        pr4.project = Project.objects.get(id=3)
+        pr4.save()
+
+        pr5 = PullRequest(id=5, title="Closed pr 1", description="Description for pull request no 5", state='CLOSED')
+        pr5.source = Branch.objects.get(id=5)
+        pr5.target = Branch.objects.get(id=6)
+        pr5.project = Project.objects.get(id=3)
+        pr5.save()
+
+        pr6 = PullRequest(id=6, title="Closed pr 2", description="Description for pull request no 6", state='CLOSED')
+        pr6.source = Branch.objects.get(id=2)
+        pr6.target = Branch.objects.get(id=3)
+        pr6.project = Project.objects.get(id=1)
+        pr6.save()
+
+        pr7 = PullRequest(id=7, title="Merged 2", description="Description for old merged pr", state='MERGED')
+        pr7.source = None
+        pr7.target = None
+        pr7.project = Project.objects.get(id=3)
+        pr7.save()
+
+    def _add_milestones(self):
+        Milestone.objects.all().delete()
+
+        m1 = Milestone(id=1, title="Milestone 1", description="Desc for milestone no 1", state='OPEN')
+        m1.project = Project.objects.get(id=1)
+        m1.due_date = timezone.now() + datetime.timedelta(days=20)
+        m1.save()
+
+        m2 = Milestone(id=2, title="Milestone 2", description="Desc for milestone no 2", state='CLOSED')
+        m2.project = Project.objects.get(id=1)
+        m2.due_date = timezone.now() - datetime.timedelta(days=2)
+        m2.save()
+
+        m3 = Milestone(id=3, title="Milestone 3", description="Desc for milestone no 3", state='OPEN')
+        m3.project = Project.objects.get(id=1)
+        m3.due_date = timezone.now() + datetime.timedelta(days=5)
+        m3.save()
+
+        m4 = Milestone(id=4, title="Milestone 4", description="Desc for milestone no 4", state='CLOSED')
+        m4.project = Project.objects.get(id=2)
+        m4.due_date = timezone.now() - datetime.timedelta(days=1)
+        m4.save()
+
+        m5 = Milestone(id=5, title="Milestone 5", description="Desc for milestone no 5", state='OPEN')
+        m5.project = Project.objects.get(id=2)
+        m5.due_date = timezone.now() + datetime.timedelta(days=4)
+        m5.save()
+
+    def _add_commit(self, id_num, file_name, branch, committer, days_past):
+        commit = Commit(id=id_num, branch=branch, committer=committer,
+                        date_time=timezone.now() - datetime.timedelta(days=days_past))
+        commit.log_message = 'File '+file_name+' added'
+        commit.save()
+
+    def _add_files(self):
+        f1 = File(id=1, title='File 1', text='Generic text for file 1 on branch 1')
+        f1.branch = Branch.objects.get(id=1)
+        f1.save()
+        self._add_commit(1, f1.title, f1.branch, 'user1', 1)
+
+        f2 = File(id=2, title='File 2', text='Generic text for file 2 on branch 1')
+        f2.branch = Branch.objects.get(id=1)
+        f2.save()
+        self._add_commit(2, f2.title, f2.branch, 'user4', 2)
+
+        f3 = File(id=3, title='File 1', text='Generic text for file 1 on branch 2')
+        f3.branch = Branch.objects.get(id=2)
+        f3.save()
+        self._add_commit(3, f3.title, f3.branch, 'user1', 3)
+
+        f4 = File(id=4, title='File 2', text='Generic text for file 2 on branch 3')
+        f4.branch = Branch.objects.get(id=3)
+        f4.save()
+        self._add_commit(4, f4.title, f4.branch, 'user4', 4)
+
+        f5 = File(id=5, title='File 3', text='Generic text for file 3 on branch 4')
+        f5.branch = Branch.objects.get(id=4)
+        f5.save()
+        self._add_commit(5, f5.title, f5.branch, 'user6', 5)
+
+        f6 = File(id=6, title='File 4', text='Generic text for file 4 on branch 5')
+        f6.branch = Branch.objects.get(id=5)
+        f6.save()
+        self._add_commit(6, f6.title, f6.branch, 'user6', 6)
+
+        f7 = File(id=7, title='File 4', text='Generic text for file 4 on branch 6')
+        f7.branch = Branch.objects.get(id=6)
+        f7.save()
+        self._add_commit(7, f7.title, f7.branch, 'user6', 7)
+
+        f8 = File(id=8, title='File 5', text='Generic text for file 5 on branch 6')
+        f8.branch = Branch.objects.get(id=6)
+        f8.save()
+        self._add_commit(8, f8.title, f8.branch, 'user6', 8)
+
+        f9 = File(id=9, title='File 6', text='Generic text for file 6 on branch 1')
+        f9.branch = Branch.objects.get(id=1)
+        f9.save()
+        self._add_commit(9, f9.title, f9.branch, 'user4', 9)
+
+        f10 = File(id=10, title='File 6', text='Generic text for file 6 on branch 3')
+        f10.branch = Branch.objects.get(id=3)
+        f10.save()
+        self._add_commit(10, f10.title, f10.branch, 'user4', 10)
+
+        f11 = File(id=11, title='File 7', text='Generic text for file 7 on branch 5')
+        f11.branch = Branch.objects.get(id=5)
+        f11.save()
+        self._add_commit(11, f11.title, f11.branch, 'user6', 11)
+
+        f12 = File(id=12, title='File 8', text='Generic text for file 8 on branch 6')
+        f12.branch = Branch.objects.get(id=6)
+        f12.save()
+        self._add_commit(12, f12.title, f12.branch, 'user6', 12)
+
+    def _add_comments(self):
+        c1 = Comment(id=1, text='Text for comment no 1')
+        c1.last_update = timezone.now() - datetime.timedelta(days=1)
+        c1.user = GitUser.objects.get_by_natural_key("user4")
+        c1.project = Project.objects.get(id=1)
+        c1.save()
+
+        c2 = Comment(id=2, text='Text for comment no 2')
+        c2.last_update = timezone.now() - datetime.timedelta(days=2)
+        c2.user = GitUser.objects.get_by_natural_key("user6")
+        c2.project = Project.objects.get(id=1)
+        c2.save()
+
+        c3 = Comment(id=3, text='Text for comment no 3')
+        c3.last_update = timezone.now() - datetime.timedelta(days=3)
+        c3.user = GitUser.objects.get_by_natural_key("user1")
+        c3.project = Project.objects.get(id=1)
+        c3.save()
+
+        c4 = Comment(id=4, text='Text for comment no 4')
+        c4.last_update = timezone.now() - datetime.timedelta(days=3)
+        c4.user = GitUser.objects.get_by_natural_key("user4")
+        c4.project = Project.objects.get(id=2)
+        c4.save()
+
+        c5 = Comment(id=5, text='Text for comment no 5')
+        c5.last_update = timezone.now() - datetime.timedelta(days=1)
+        c5.user = GitUser.objects.get_by_natural_key("user6")
+        c5.project = Project.objects.get(id=2)
+        c5.save()
+
+        c6 = Comment(id=6, text='Text for comment no 6')
+        c6.last_update = timezone.now() - datetime.timedelta(days=4)
+        c6.user = GitUser.objects.get_by_natural_key("user2")
+        c6.project = Project.objects.get(id=3)
+        c6.save()
+
+    def _add_reactions(self):
+        r1 = Reaction(id=1, type='LIKE')
+        r1.user = GitUser.objects.get_by_natural_key("user2")
+        r1.comment = Comment.objects.get(id=1)
+        r1.save()
+
+        r2 = Reaction(id=2, type='DISLIKE')
+        r2.user = GitUser.objects.get_by_natural_key("user4")
+        r2.comment = Comment.objects.get(id=1)
+        r2.save()
+
+        r3 = Reaction(id=3, type='LIKE')
+        r3.user = GitUser.objects.get_by_natural_key("user1")
+        r3.comment = Comment.objects.get(id=2)
+        r3.save()
+
+        r4 = Reaction(id=4, type='DISLIKE')
+        r4.user = GitUser.objects.get_by_natural_key("user5")
+        r4.comment = Comment.objects.get(id=2)
+        r4.save()
+
+        r5 = Reaction(id=5, type='DISLIKE')
+        r5.user = GitUser.objects.get_by_natural_key("user6")
+        r5.comment = Comment.objects.get(id=3)
+        r5.save()
+
+        r6 = Reaction(id=6, type='DISLIKE')
+        r6.user = GitUser.objects.get_by_natural_key("user1")
+        r6.comment = Comment.objects.get(id=3)
+        r6.save()
+
+        r7 = Reaction(id=7, type='LIKE')
+        r7.user = GitUser.objects.get_by_natural_key("user5")
+        r7.comment = Comment.objects.get(id=4)
+        r7.save()
+
+        r8 = Reaction(id=8, type='LIKE')
+        r8.user = GitUser.objects.get_by_natural_key("user2")
+        r8.comment = Comment.objects.get(id=4)
+        r8.save()
+
+        r9 = Reaction(id=9, type='LIKE')
+        r9.user = GitUser.objects.get_by_natural_key("user4")
+        r9.comment = Comment.objects.get(id=5)
+        r9.save()
+
+        r10 = Reaction(id=10, type='DISLIKE')
+        r10.user = GitUser.objects.get_by_natural_key("user4")
+        r10.comment = Comment.objects.get(id=6)
+        r10.save()
+
+    def _add_issues(self):
+        i1 = Issue(id=1, title='Issue 1', description='Description text for issue no 1', state='OPEN')
+        i1.project = Project.objects.get(id=1)
+        i1.milestone = Milestone.objects.get(id=1)
+        i1.save()
+
+        i2 = Issue(id=2, title='Issue 2', description='Description text for issue no 2', state='CLOSED')
+        i2.project = Project.objects.get(id=1)
+        i2.milestone = Milestone.objects.get(id=2)
+        i2.save()
+
+        i3 = Issue(id=3, title='Issue 3', description='Description text for issue no 3', state='OPEN')
+        i3.project = Project.objects.get(id=1)
+        i3.milestone = Milestone.objects.get(id=1)
+        i3.save()
+
+        i4 = Issue(id=4, title='Issue 4', description='Description text for issue no 4', state='OPEN')
+        i4.project = Project.objects.get(id=1)
+        i4.milestone = Milestone.objects.get(id=3)
+        i4.save()
+
+        i5 = Issue(id=5, title='Issue 5', description='Description text for issue no 5', state='CLOSED')
+        i5.project = Project.objects.get(id=2)
+        i5.milestone = Milestone.objects.get(id=4)
+        i5.save()
+
+        i6 = Issue(id=6, title='Issue 6', description='Description text for issue no 6', state='OPEN')
+        i6.project = Project.objects.get(id=2)
+        i6.milestone = Milestone.objects.get(id=5)
+        i6.save()
+
+        i7 = Issue(id=7, title='Issue 7', description='Description text for issue no 7', state='OPEN')
+        i7.project = Project.objects.get(id=3)
+        i7.save()
+
+        i8 = Issue(id=8, title='Issue 8', description='Description text for issue no 8', state='CLOSED')
+        i8.project = Project.objects.get(id=1)
+        i8.milestone = Milestone.objects.get(id=1)
+        i8.save()
+
     def handle(self, *args, **options):
         self._add_users()
         self._add_projects()
         self._add_branches()
+        self._add_milestones()
+        self._add_files()
+        self._add_comments()
+        self._add_reactions()
+        self._add_issues()
+        self._add_pull_requests()

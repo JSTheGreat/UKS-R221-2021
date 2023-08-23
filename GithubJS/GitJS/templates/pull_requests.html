@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ title }}</h1>
+
+    <br>
+    <div>
+        <a href="{% url 'pull_requests' project_id 'OPEN' %}">
+            <button class="btn btn-primary">OPEN</button>
+        </a>
+        <a href="{% url 'pull_requests' project_id 'CLOSED' %}">
+            <button class="btn btn-secondary">CLOSED</button>
+        </a>
+    </div>
+    <br><br>
+    <ul class="list-group">
+    {% for pr in pull_requests %}
+        <div class="list-group">
+        <a href="{% url 'get_merge_changes' pr.id %}"
+           class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+              <h5>{{pr.title}}</h5>
+              {% if pr.target and pr.source %}
+                <small>{{pr.target.name}} <- {{pr.source.name}}</small>
+              {% else %}
+                <small>{{pr.state}}</small>
+              {% endif %}
+            </div>
+            {% if pr.issue %}
+                <p class="mb-1">Issue: {{pr.issue.title}}</p>
+            {% endif %}
+            <small>
+                {% if pr.state == 'OPEN' %}
+                    <a href="{% url 'edit_pull_request' pr.id %}">
+                        <button class="btn btn-warning">Edit</button>
+                    </a>
+                    <a href="{% url 'toggle_request_state' pr.id %}">
+                        <button class="btn btn-danger">Close</button>
+                    </a>
+                {% elif pr.state == 'CLOSED' %}
+                    <a href="{% url 'toggle_request_state' pr.id %}">
+                        <button class="btn btn-info">Reopen</button>
+                    </a>
+                {% endif %}
+            </small>
+        </a>
+    </div>
+    {% endfor %}
+    </ul>
+
+    <br>
+    <a href="{% url 'add_pull_request' project_id %}">
+        <button class="btn btn-success">Add pull request</button>
+    </a>
+
+{% endblock %}

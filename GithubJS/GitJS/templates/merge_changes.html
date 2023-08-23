@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ title }}</h1>
+    <br><br>
+
+    <div class="fluid-container">
+
+        <div class="row mt-4">
+            <div class="col-md-6 d-flex justify-content-center">
+                <b>Before</b>
+            </div>
+            <div class="col-md-6 d-flex justify-content-center">
+                <b>After</b>
+            </div>
+        </div>
+
+        {% for before, after in changes %}
+        <div class="row mt-5">
+            {% if before == '' %}
+            <textarea class="col-md-6 bg-success text-white" disabled>
+                {{before}}
+            </textarea>
+            <textarea class="col-md-6 bg-success text-white" disabled>
+                {{after}}
+            </textarea>
+            {% else %}
+            <textarea class="col-md-6 bg-warning text-white" disabled>
+                {{before}}
+            </textarea>
+            <textarea class="col-md-6 bg-warning text-white" disabled>
+                {{after}}
+            </textarea>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    </div>
+
+    <br><br>
+    <a href="{% url 'merge_request' pr_id %}">
+        <button class="btn btn-primary">Merge</button>
+    </a>
+{% endblock %}

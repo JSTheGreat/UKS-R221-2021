@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ title }}</h1>
+
+    <br>
+    <div>
+        <a href="{% url 'milestones' project_id 'OPEN' %}">
+            <button class="btn btn-primary">OPEN</button>
+        </a>
+        <a href="{% url 'milestones' project_id 'CLOSED' %}">
+            <button class="btn btn-secondary">CLOSED</button>
+        </a>
+    </div>
+    <ul class="list-group">
+    {% for milestone in milestones %}
+        <li class="list-group-item">
+            {{milestone.title}} - {{milestone.due_date}}
+            <a href="{% url 'milestone_issues' milestone.id 'OPEN' %}">
+                <button class="btn btn-info">Issues</button>
+            </a>
+            {% if milestone.state == 'OPEN' %}
+            <a href="{% url 'edit_milestone' milestone.id %}">
+                <button class="btn btn-warning">Edit</button>
+            </a>
+            <a href="{% url 'delete_milestone' milestone.id %}">
+                <button class="btn btn-danger">Delete</button>
+            </a>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+
+    <br>
+    <a href="{% url 'add_milestone' project_id %}">
+        <button class="btn btn-success">Add milestone</button>
+    </a>
+
+{% endblock %}

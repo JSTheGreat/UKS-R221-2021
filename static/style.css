@@ -1,8 +1,3 @@
-.add_btn {
-    background-color: blue;
-    color: white;
-}
-
 .error {
     color: red
 }
@@ -47,4 +42,17 @@ table{
 
 .label{
  clear: left;
+}
+
+.new_comment {
+ margin-top: 3rem;
+ margin-bottom: 3rem;
+}
+
+.LIKE {
+ color: green;
+}
+
+.DISLIKE {
+ color: red;
 }
