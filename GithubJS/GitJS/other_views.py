@@ -234,6 +234,12 @@ def merge_request(request, pr_id):
                     date_time=timezone.now())
     commit.log_message = 'Merged from ' + pull_request.source.name
     commit.save()
+
+    issue = pull_request.issue
+    if issue is not None:
+        issue.state = 'CLOSED'
+        issue.save()
+
     project_id = pull_request.project.id
     pull_request.state = 'MERGED'
     pull_request.source = None

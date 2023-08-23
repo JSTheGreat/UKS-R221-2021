@@ -782,7 +782,7 @@ class InitialTests(TestCase):
         pr = PullRequest.objects.get(id=1)
         branch_before = Branch.objects.get(id=2)
         self.assertEqual(len(branch_before.get_files()), 1)
-        self.assertEqual(branch_before.get_files()[0].title, 'Generic text for file 1 on branch 2')
+        self.assertEqual(branch_before.get_files()[0].text, 'Generic text for file 1 on branch 2')
         self.assertIsNone(branch_before.get_file_by_title('File 2'))
         self.assertIsNone(branch_before.get_file_by_title('File 6'))
 
@@ -790,6 +790,122 @@ class InitialTests(TestCase):
 
         branch_after = Branch.objects.get(id=2)
         self.assertEqual(len(branch_after.get_files()), 3)
-        self.assertEqual(branch_after.get_files()[0].title, 'Generic text for file 1 on branch 1')
+        self.assertEqual(branch_after.get_files()[0].text, 'Generic text for file 1 on branch 1')
         self.assertIsNotNone(branch_after.get_file_by_title('File 2'))
         self.assertIsNotNone(branch_after.get_file_by_title('File 6'))
+
+    def test_add_pull_request_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project = Project.objects.get(id=1)
+        pr_size_before = len(PullRequest.objects.filter(state='OPEN', project=project))
+        context = {'new_title': 'New pull request', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': 'Branch 2', 'target_branch': 'Branch 3'}
+        self.client.post(reverse('add_pull_request', args=(1, )), context, follow=True)
+        self.assertTrue(len(PullRequest.objects.filter(state='OPEN', project=project)) > pr_size_before)
+
+        pr_size_before = len(PullRequest.objects.filter(state='OPEN', project=project))
+        context = {'new_title': 'New pull request', 'new_desc': '', 'new_issue': 'Issue 1',
+                   'source_branch': 'Branch 3', 'target_branch': 'Branch 1'}
+        self.client.post(reverse('add_pull_request', args=(1,)), context, follow=True)
+        self.assertTrue(len(PullRequest.objects.filter(state='OPEN', project=project)) > pr_size_before)
+
+    def test_add_pull_request_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  ', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': 'Branch 2', 'target_branch': 'Branch 3'}
+        response = self.client.post(reverse('add_pull_request', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Title can\'t be empty')
+
+        context = {'new_title': 'New pull request', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': '', 'target_branch': 'Branch 3'}
+        response = self.client.post(reverse('add_pull_request', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Source branch must be chosen')
+
+        context = {'new_title': 'New pull request', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': 'Branch 2', 'target_branch': ''}
+        response = self.client.post(reverse('add_pull_request', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Target branch must be chosen')
+
+        context = {'new_title': 'New pull request', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': 'Branch 2', 'target_branch': 'Branch 2'}
+        response = self.client.post(reverse('add_pull_request', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Source and target branch can\'t be the same')
+
+        context = {'new_title': 'Pull req 1', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': 'Branch 2', 'target_branch': 'Branch 3'}
+        response = self.client.post(reverse('add_pull_request', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Pull request with given title already exists')
+
+    def test_edit_pull_request_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        pull_request_before = PullRequest.objects.get(id=1)
+        context = {'new_title': 'New pull request', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': 'Branch 2', 'target_branch': 'Branch 3'}
+        self.client.post(reverse('edit_pull_request', args=(1, )), context, follow=True)
+
+        pull_request_after = PullRequest.objects.get(id=1)
+        self.assertNotEqual(pull_request_before.title, pull_request_after.title)
+        self.assertNotEqual(pull_request_before.description, pull_request_after.description)
+        self.assertNotEqual(pull_request_before.issue.title, pull_request_after.issue.title)
+        self.assertNotEqual(pull_request_before.source.name, pull_request_after.source.name)
+        self.assertNotEqual(pull_request_before.target.name, pull_request_after.target.name)
+
+        pull_request_before = PullRequest.objects.get(id=1)
+        context = {'new_title': 'New pull request 2', 'new_desc': 'New pr description 2', 'new_issue': 'Issue 3',
+                   'source_branch': 'Branch 1', 'target_branch': 'Branch 2'}
+        self.client.post(reverse('edit_pull_request', args=(1,)), context, follow=True)
+
+        pull_request_after = PullRequest.objects.get(id=1)
+        self.assertNotEqual(pull_request_before.title, pull_request_after.title)
+        self.assertNotEqual(pull_request_before.description, pull_request_after.description)
+        self.assertNotEqual(pull_request_before.issue.title, pull_request_after.issue.title)
+        self.assertNotEqual(pull_request_before.source.name, pull_request_after.source.name)
+        self.assertNotEqual(pull_request_before.target.name, pull_request_after.target.name)
+
+    def test_edit_pull_request_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  ', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': 'Branch 2', 'target_branch': 'Branch 3'}
+        response = self.client.post(reverse('edit_pull_request', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Title can\'t be empty')
+
+        context = {'new_title': 'New pull request', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': '', 'target_branch': 'Branch 3'}
+        response = self.client.post(reverse('edit_pull_request', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Source branch must be chosen')
+
+        context = {'new_title': 'New pull request', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': 'Branch 2', 'target_branch': ''}
+        response = self.client.post(reverse('edit_pull_request', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Target branch must be chosen')
+
+        context = {'new_title': 'New pull request', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': 'Branch 2', 'target_branch': 'Branch 2'}
+        response = self.client.post(reverse('edit_pull_request', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Source and target branch can\'t be the same')
+
+        context = {'new_title': 'Pull req 2', 'new_desc': 'New pr description', 'new_issue': 'None',
+                   'source_branch': 'Branch 2', 'target_branch': 'Branch 3'}
+        response = self.client.post(reverse('edit_pull_request', args=(1,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Pull request with given title already exists')
+
+    def test_toggle_request_state(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project = Project.objects.get(id=1)
+        open_requests_before = len(PullRequest.objects.filter(state='OPEN', project=project))
+        self.client.post(reverse('toggle_request_state', args=(1,)), context, follow=True)
+        self.assertTrue(len(PullRequest.objects.filter(state='OPEN', project=project)) < open_requests_before)
+
+        open_requests_before = len(PullRequest.objects.filter(state='OPEN', project=project))
+        self.client.post(reverse('toggle_request_state', args=(1,)), context, follow=True)
+        self.assertTrue(len(PullRequest.objects.filter(state='OPEN', project=project)) > open_requests_before)

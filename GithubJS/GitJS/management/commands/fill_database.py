@@ -139,6 +139,7 @@ class Command(BaseCommand):
         pr1.source = Branch.objects.get(id=1)
         pr1.target = Branch.objects.get(id=2)
         pr1.project = Project.objects.get(id=1)
+        pr1.issue = Issue.objects.get(id=1)
         pr1.save()
 
         pr2 = PullRequest(id=2, title="Pull req 2", description="Description for pull request no 2", state='OPEN')
@@ -404,9 +405,9 @@ class Command(BaseCommand):
         self._add_users()
         self._add_projects()
         self._add_branches()
-        self._add_pull_requests()
         self._add_milestones()
         self._add_files()
         self._add_comments()
         self._add_reactions()
         self._add_issues()
+        self._add_pull_requests()
