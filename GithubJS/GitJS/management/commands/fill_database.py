@@ -7,7 +7,7 @@ import datetime
 
 from ...models import Project, Branch, GitUser, StarredProject,\
     WatchedProject, ProjectUpdate, Milestone, File, Contributor, \
-    Comment, Reaction, Issue, Commit
+    Comment, Reaction, Issue, Commit, PullRequest
 
 
 class Command(BaseCommand):
@@ -132,6 +132,52 @@ class Command(BaseCommand):
         b6.save()
         b6.project.update_users(self._get_branch_message(b6))
 
+    def _add_pull_requests(self):
+        PullRequest.objects.all().delete()
+
+        pr1 = PullRequest(id=1, title="Pull req 1", description="Description for pull request no 1", state='OPEN')
+        pr1.source = Branch.objects.get(id=1)
+        pr1.target = Branch.objects.get(id=2)
+        pr1.project = Project.objects.get(id=1)
+        pr1.issue = Issue.objects.get(id=1)
+        pr1.save()
+
+        pr2 = PullRequest(id=2, title="Pull req 2", description="Description for pull request no 2", state='OPEN')
+        pr2.source = Branch.objects.get(id=1)
+        pr2.target = Branch.objects.get(id=3)
+        pr2.project = Project.objects.get(id=1)
+        pr2.save()
+
+        pr3 = PullRequest(id=3, title="Merged req", description="Description for merged pull request", state='MERGED')
+        pr3.source = None
+        pr3.target = Branch.objects.get(id=1)
+        pr3.project = Project.objects.get(id=1)
+        pr3.save()
+
+        pr4 = PullRequest(id=4, title="Pull req 4", description="Description for pull request no 4", state='OPEN')
+        pr4.source = Branch.objects.get(id=6)
+        pr4.target = Branch.objects.get(id=5)
+        pr4.project = Project.objects.get(id=3)
+        pr4.save()
+
+        pr5 = PullRequest(id=5, title="Closed pr 1", description="Description for pull request no 5", state='CLOSED')
+        pr5.source = Branch.objects.get(id=5)
+        pr5.target = Branch.objects.get(id=6)
+        pr5.project = Project.objects.get(id=3)
+        pr5.save()
+
+        pr6 = PullRequest(id=6, title="Closed pr 2", description="Description for pull request no 6", state='CLOSED')
+        pr6.source = Branch.objects.get(id=2)
+        pr6.target = Branch.objects.get(id=3)
+        pr6.project = Project.objects.get(id=1)
+        pr6.save()
+
+        pr7 = PullRequest(id=7, title="Merged 2", description="Description for old merged pr", state='MERGED')
+        pr7.source = None
+        pr7.target = None
+        pr7.project = Project.objects.get(id=3)
+        pr7.save()
+
     def _add_milestones(self):
         Milestone.objects.all().delete()
 
@@ -167,62 +213,62 @@ class Command(BaseCommand):
         commit.save()
 
     def _add_files(self):
-        f1 = File(id=1, title='File 1', text='Generic text for file 1')
+        f1 = File(id=1, title='File 1', text='Generic text for file 1 on branch 1')
         f1.branch = Branch.objects.get(id=1)
         f1.save()
         self._add_commit(1, f1.title, f1.branch, 'user1', 1)
 
-        f2 = File(id=2, title='File 2', text='Generic text for file 2')
+        f2 = File(id=2, title='File 2', text='Generic text for file 2 on branch 1')
         f2.branch = Branch.objects.get(id=1)
         f2.save()
         self._add_commit(2, f2.title, f2.branch, 'user4', 2)
 
-        f3 = File(id=3, title='File 1', text='Generic text for file 1')
+        f3 = File(id=3, title='File 1', text='Generic text for file 1 on branch 2')
         f3.branch = Branch.objects.get(id=2)
         f3.save()
         self._add_commit(3, f3.title, f3.branch, 'user1', 3)
 
-        f4 = File(id=4, title='File 2', text='Generic text for file 2')
+        f4 = File(id=4, title='File 2', text='Generic text for file 2 on branch 3')
         f4.branch = Branch.objects.get(id=3)
         f4.save()
         self._add_commit(4, f4.title, f4.branch, 'user4', 4)
 
-        f5 = File(id=5, title='File 3', text='Generic text for file 3')
+        f5 = File(id=5, title='File 3', text='Generic text for file 3 on branch 4')
         f5.branch = Branch.objects.get(id=4)
         f5.save()
         self._add_commit(5, f5.title, f5.branch, 'user6', 5)
 
-        f6 = File(id=6, title='File 4', text='Generic text for file 4')
+        f6 = File(id=6, title='File 4', text='Generic text for file 4 on branch 5')
         f6.branch = Branch.objects.get(id=5)
         f6.save()
         self._add_commit(6, f6.title, f6.branch, 'user6', 6)
 
-        f7 = File(id=7, title='File 4', text='Generic text for file 4')
+        f7 = File(id=7, title='File 4', text='Generic text for file 4 on branch 6')
         f7.branch = Branch.objects.get(id=6)
         f7.save()
         self._add_commit(7, f7.title, f7.branch, 'user6', 7)
 
-        f8 = File(id=8, title='File 5', text='Generic text for file 5')
+        f8 = File(id=8, title='File 5', text='Generic text for file 5 on branch 6')
         f8.branch = Branch.objects.get(id=6)
         f8.save()
         self._add_commit(8, f8.title, f8.branch, 'user6', 8)
 
-        f9 = File(id=9, title='File 6', text='Generic text for file 6')
+        f9 = File(id=9, title='File 6', text='Generic text for file 6 on branch 1')
         f9.branch = Branch.objects.get(id=1)
         f9.save()
         self._add_commit(9, f9.title, f9.branch, 'user4', 9)
 
-        f10 = File(id=10, title='File 6', text='Generic text for file 6')
+        f10 = File(id=10, title='File 6', text='Generic text for file 6 on branch 3')
         f10.branch = Branch.objects.get(id=3)
         f10.save()
         self._add_commit(10, f10.title, f10.branch, 'user4', 10)
 
-        f11 = File(id=11, title='File 7', text='Generic text for file 7')
+        f11 = File(id=11, title='File 7', text='Generic text for file 7 on branch 5')
         f11.branch = Branch.objects.get(id=5)
         f11.save()
         self._add_commit(11, f11.title, f11.branch, 'user6', 11)
 
-        f12 = File(id=12, title='File 8', text='Generic text for file 8')
+        f12 = File(id=12, title='File 8', text='Generic text for file 8 on branch 6')
         f12.branch = Branch.objects.get(id=6)
         f12.save()
         self._add_commit(12, f12.title, f12.branch, 'user6', 12)
@@ -364,3 +410,4 @@ class Command(BaseCommand):
         self._add_comments()
         self._add_reactions()
         self._add_issues()
+        self._add_pull_requests()

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>{{ title }}</h2>
+
+    <br>
+    <form action="/{{form_action}}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        {% if error_message %}<p class="error"><strong>{{ error_message }}</strong></p>{% endif %}
+        <label for="new_title">Title</label><br>
+        <input type="text" name="new_title" id="new_title" value="{{input_title}}" class="form-control" required>
+
+        <label for="new_desc">Description</label><br>
+        <textarea class="form-control" type="text" name="new_desc" id="new_desc"
+                  rows="3">{{input_desc}}</textarea>
+
+        <label for="new_issue">Issue</label><br>
+        <select class="form-control" name="new_issue" id="new_issue">
+            <option>None</option>
+            {% for issue in issues %}
+                {% if input_issue == issue.title %}
+                <option selected>{{issue.title}}</option>
+                {% else %}
+                <option>{{issue.title}}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+
+        <label for="source_branch">Source</label><br>
+        <select class="form-control" name="source_branch" id="source_branch">
+            <option></option>
+            {% for branch in branches %}
+                {% if branch.name == source_branch %}
+                <option selected>{{branch.name}}</option>
+                {% else %}
+                <option>{{branch.name}}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+
+        <label for="target_branch">Target</label><br>
+        <select class="form-control" name="target_branch" id="target_branch">
+            <option></option>
+            {% for branch in branches %}
+                {% if branch.name == target_branch %}
+                <option selected>{{branch.name}}</option>
+                {% else %}
+                <option>{{branch.name}}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </fieldset>
+
+        <br>
+    {% if input_title == '' %}
+        <input type="submit" value="Add" class="btn btn-success">
+    {% else %}
+        <input type="submit" value="Change" class="btn btn-warning">
+    {% endif %}
+    </form>
+{% endblock %}

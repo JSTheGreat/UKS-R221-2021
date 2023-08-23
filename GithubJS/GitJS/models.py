@@ -44,6 +44,10 @@ class Project(models.Model):
         branches = Branch.objects.filter(project=self)
         return len(branches)
 
+    def get_branches(self):
+        branches = Branch.objects.filter(project=self)
+        return branches
+
     def update_users(self, message):
         for watched in WatchedProject.objects.filter(project_id=self.id):
             new_date = timezone.now()
@@ -57,6 +61,17 @@ class Project(models.Model):
     def get_issues(self, state):
         issues = Issue.objects.filter(project=self, state=state)
         return issues
+
+    def get_pull_requests(self, state):
+        pull_requests = []
+        if state == 'OPEN':
+            pull_requests = PullRequest.objects.filter(project=self, state=state)
+        else:
+            all_requests = PullRequest.objects.filter(project=self)
+            for req in all_requests:
+                if req.state == 'CLOSED' or req.state == 'MERGED':
+                    pull_requests.append(req)
+        return pull_requests
 
     def get_contributors(self):
         contributors = Contributor.objects.filter(project_id=self.id)
@@ -126,6 +141,16 @@ class Branch(models.Model):
         commits = Commit.objects.filter(branch=self).order_by('-date_time')
         return commits
 
+    def get_files(self):
+        files = File.objects.filter(branch=self)
+        return files
+
+    def get_file_by_title(self, title):
+        found = File.objects.filter(branch=self, title=title)
+        if len(found) == 0:
+            return None
+        return found[0]
+
 
 class Milestone(models.Model):
     title = models.CharField(max_length=100)
@@ -177,3 +202,39 @@ class Commit(models.Model):
     date_time = models.DateTimeField("date committed")
     branch = models.ForeignKey(Branch, on_delete=models.CASCADE)
     committer = models.CharField(max_length=100)
+
+
+class PullRequest(models.Model):
+    state = models.CharField(max_length=7)
+    title = models.CharField(max_length=100)
+    description = models.CharField(max_length=200)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    issue = models.ForeignKey(Issue, null=True, on_delete=models.SET_NULL)
+    source = models.ForeignKey(Branch, null=True, on_delete=models.SET_NULL, related_name='source')
+    target = models.ForeignKey(Branch, null=True, on_delete=models.SET_NULL, related_name='target')
+
+    def get_differences(self):
+        different_files = self.source.get_files()
+        differences = []
+        for different in different_files:
+            if self.target.get_file_by_title(different.title):
+                target_file = self.target.get_file_by_title(different.title)
+                differences.append([target_file.text, different.text])
+            else:
+                differences.append(['', different.text])
+        return differences
+
+    def merge_branches(self):
+        source_files = self.source.get_files()
+        new_files = []
+        new_id = File.objects.all().order_by('-id')[0].id + 1
+        for file in source_files:
+            if self.target.get_file_by_title(file.title):
+                changed = File.objects.get(title=file.title, branch=self.target)
+                changed.text = file.text
+                changed.save()
+            else:
+                new_file = File(id=new_id, title=file.title, text=file.text, branch=self.target)
+                new_files.append(new_file)
+                new_id += 1
+        File.objects.bulk_create(new_files)
