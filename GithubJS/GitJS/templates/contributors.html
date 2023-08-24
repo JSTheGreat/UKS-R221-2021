@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
+    <a href="{% url 'single_project' project_id %}">
+        <button class="btn btn-primary">Back</button>
+    </a>
+    <br><br>
     <ul class="list-group">
         {% for contributor in contributors %}
         <li class="list-group-item">

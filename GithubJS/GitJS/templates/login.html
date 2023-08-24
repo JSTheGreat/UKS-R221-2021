@@ -10,6 +10,11 @@
 </head>
 <body>
 
+<a href="{% url 'index' %}">
+    <button class="btn btn-primary">Main page</button>
+</a>
+<br><br>
+
 <h2>Login Form</h2>
 
 <form action="{% url 'git_login' %}" method="post">

@@ -1,5 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
+    {% if project_id %}
+        <a href="{% url 'single_project' project_id %}">
+            <button class="btn btn-primary">Back</button>
+        </a>
+        <br><br>
+    {% else %}
+        <a href="{% url 'milestones' project.id 'OPEN' %}">
+            <button class="btn btn-primary">Back</button>
+        </a>
+        <br><br>
+    {% endif %}
+
     <h1>{{ title }}</h1>
 
     <br>

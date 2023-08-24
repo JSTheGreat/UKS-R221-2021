@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
+    <a href="{% url 'pull_requests' project_id 'OPEN' %}">
+        <button class="btn btn-primary">Back</button>
+    </a>
+    <br><br>
+
     <h2>{{ title }}</h2>
 
     <br>

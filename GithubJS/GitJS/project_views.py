@@ -119,7 +119,8 @@ def contributors(request, project_id):
         raise Http404()
     return render(request, 'contributors.html', {'title': 'Contributors', 'contributors': project.get_contributors(),
                                                  'form_action': 'add_contributor/'+str(project_id),
-                                                 'other_users': project.get_noncontributors()})
+                                                 'other_users': project.get_noncontributors(),
+                                                 'project_id': project_id})
 
 
 @login_required(login_url='login/')
