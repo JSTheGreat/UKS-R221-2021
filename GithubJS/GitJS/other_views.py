@@ -77,6 +77,7 @@ def add_pull_request(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     if request.method == 'GET':
         return render(request, "pr_form.html", {"title": "New pull request", "input_title": "",
+                                                'project_id': project.id,
                                                 "input_desc": "", "source_branch": "", "target_branch": "",
                                                 'input_issue': '',
                                                 'branches': project.get_branches(),
@@ -101,6 +102,7 @@ def add_pull_request(request, project_id):
 
         if error_message:
             return render(request, "pr_form.html", {"error_message": error_message, 'input_issue': '',
+                                                    'project_id': project.id,
                                                     "title": "New pull request", "input_title": "",
                                                     "input_desc": "", "source_branch": "", "target_branch": "",
                                                     'branches': project.get_branches(),
@@ -111,6 +113,7 @@ def add_pull_request(request, project_id):
         if len(existing_pr) > 0:
             error_message = 'Pull request with given title already exists'
             return render(request, "pr_form.html", {"error_message": error_message, 'input_issue': '',
+                                                    'project_id': project.id,
                                                     "title": "New pull request", "input_title": "",
                                                     "input_desc": "", "source_branch": "", "target_branch": "",
                                                     'branches': project.get_branches(),
@@ -137,6 +140,7 @@ def edit_pull_request(request, pr_id):
     issue_title = pull_request.issue.title if pull_request.issue is not None else 'None'
     if request.method == 'GET':
         return render(request, "pr_form.html", {"title": "Pull request #"+str(pr_id),
+                                                'project_id': pull_request.project.id,
                                                 "input_title": pull_request.title,
                                                 "input_desc": pull_request.description,
                                                 "source_branch": pull_request.source.name,
@@ -165,6 +169,7 @@ def edit_pull_request(request, pr_id):
         if error_message:
             return render(request, "pr_form.html", {"error_message": error_message,
                                                     "title": "Pull request #" + str(pr_id),
+                                                    'project_id': pull_request.project.id,
                                                     "input_title": pull_request.title,
                                                     "input_desc": pull_request.description,
                                                     "source_branch": pull_request.source.name,
@@ -179,6 +184,7 @@ def edit_pull_request(request, pr_id):
                 error_message = 'Pull request with given title already exists'
                 return render(request, "pr_form.html", {"error_message": error_message,
                                                         "title": "Pull request #" + str(pr_id),
+                                                        'project_id': pull_request.project.id,
                                                         "input_title": pull_request.title,
                                                         "input_desc": pull_request.description,
                                                         "source_branch": pull_request.source.name,
@@ -221,6 +227,7 @@ def get_merge_changes(request, pr_id):
     pull_request = get_object_or_404(PullRequest, id=pr_id)
     differences = pull_request.get_differences()
     return render(request, 'merge_changes.html', {'title': 'Changes for PR#'+str(pr_id),
+                                                  'project_id': pull_request.project.id,
                                                   'changes': differences, 'pr_id': pr_id})
 
 

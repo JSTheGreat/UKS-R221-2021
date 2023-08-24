@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
+    <a href="{% url 'single_project' branch.project.id %}">
+        <button class="btn btn-primary">Back</button>
+    </a>
+    <br><br>
     <h1>{{ branch.name }}</h1>
 
     <h6>

@@ -22,7 +22,7 @@ def get_milestones(request, project_id, state):
 def add_milestone(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     if request.method == 'GET':
-        return render(request, 'milestone_form.html', {'title': 'New milestone',
+        return render(request, 'milestone_form.html', {'title': 'New milestone', 'project_id': project_id,
                                                        'form_action': str(project_id)+'/add_milestone',
                                                        'input_title': '', 'input_desc': '', 'due_date': timezone.now()
                                                        })
@@ -40,7 +40,7 @@ def add_milestone(request, project_id):
             error_message = 'Due date has to be a future date'
 
         if error_message:
-            return render(request, 'milestone_form.html', {'title': 'New milestone',
+            return render(request, 'milestone_form.html', {'title': 'New milestone', 'project_id': project_id,
                                                            'form_action': str(project_id) + '/add_milestone',
                                                            'input_title': '', 'input_desc': '',
                                                            'due_date': timezone.now(),
@@ -50,7 +50,7 @@ def add_milestone(request, project_id):
         try:
             existing = Milestone.objects.get(title=new_title, project=project)
             error_message = "Milestone with given title already exists"
-            return render(request, 'milestone_form.html', {'title': 'New milestone',
+            return render(request, 'milestone_form.html', {'title': 'New milestone', 'project_id': project_id,
                                                            'form_action': str(project_id) + '/add_milestone',
                                                            'input_title': '', 'input_desc': '',
                                                            'due_date': timezone.now(),
@@ -74,6 +74,7 @@ def edit_milestone(request, milestone_id):
     date_val = milestone.due_date.isoformat().split("T")[0]
     if request.method == 'GET':
         return render(request, 'milestone_form.html', {'title': 'Milestone #'+str(milestone_id),
+                                                       'project_id': milestone.project.id,
                                                        'percent': milestone.get_percent(),
                                                        'form_action': 'edit_milestone/'+str(milestone_id),
                                                        'input_title': milestone.title,
@@ -95,6 +96,7 @@ def edit_milestone(request, milestone_id):
 
         if error_message:
             return render(request, 'milestone_form.html', {'title': 'Milestone #'+str(milestone_id),
+                                                           'project_id': milestone.project.id,
                                                            'percent': milestone.get_percent(),
                                                            'form_action': 'edit_milestone/' + str(milestone_id),
                                                            'input_title': milestone.title,
@@ -108,6 +110,7 @@ def edit_milestone(request, milestone_id):
             if existing[0].id != milestone.id:
                 error_message = "Milestone with given title already exists"
                 return render(request, 'milestone_form.html', {'title': 'Milestone #'+str(milestone_id),
+                                                               'project_id': milestone.project.id,
                                                                'percent': milestone.get_percent(),
                                                                'form_action': 'edit_milestone/' + str(milestone_id),
                                                                'input_title': milestone.title,

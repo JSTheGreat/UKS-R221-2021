@@ -22,7 +22,8 @@ def get_milestone_issues(request, milestone_id, state):
     milestone = get_object_or_404(Milestone, id=milestone_id)
     can_edit = milestone.project.can_edit(request.user.username)
     return render(request, 'issues.html', {'title': 'Issues for ' + milestone.title, 'milestone_id': milestone.id,
-                                           'issues': milestone.get_issues(state), 'can_edit': can_edit})
+                                           'issues': milestone.get_issues(state), 'can_edit': can_edit,
+                                           'project': milestone.project})
 
 
 @login_required(login_url='login/')
