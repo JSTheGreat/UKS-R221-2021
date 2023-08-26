@@ -944,3 +944,32 @@ class InitialTests(TestCase):
         self.assertNotEqual(my_projects[0].lead.username, user.username)
         self.assertEqual(my_projects[1].title, 'Project 3')
         self.assertEqual(my_projects[1].lead.username, user.username)
+
+    def test_add_project_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        projects_before = len(Project.objects.all())
+        context = {'new_title': 'New project title'}
+        self.client.post('http://localhost:8000/add_project', context, follow=True)
+        self.assertTrue(len(Project.objects.all()) > projects_before)
+
+    def test_add_project_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  '}
+        response = self.client.post('http://localhost:8000/add_project', context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Project name can\'t be empty')
+
+        context = {'new_title': 'Project 1'}
+        response = self.client.post('http://localhost:8000/add_project', context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Project with given title already exists')
+
+    def test_delete_project(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        projects_before = len(Project.objects.all())
+        self.client.post(reverse('delete_project', args=(1,)), context, follow=True)
+        self.assertTrue(len(Project.objects.all()) < projects_before)
