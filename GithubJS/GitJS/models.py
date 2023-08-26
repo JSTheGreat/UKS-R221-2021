@@ -141,6 +141,7 @@ class ProjectUpdate(models.Model):
 class Branch(models.Model):
     name = models.CharField(max_length=100)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    default = models.BooleanField()
 
     def get_commits(self):
         commits = Commit.objects.filter(branch=self).order_by('-date_time')

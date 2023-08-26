@@ -57,7 +57,13 @@
     <ul class="list-group">
     {% for branch in project.branch_set.all %}
         <li class="list-group-item">
-            <a href="{% url 'single_branch' branch.id %}">{{ branch.name }}</a>
+            {% if branch.default %}
+                <a href="{% url 'single_branch' branch.id %}">
+                    {{ branch.name }} (default)
+                </a>
+            {% else %}
+                <a href="{% url 'single_branch' branch.id %}">{{ branch.name }}</a>
+            {% endif %}
             {% if not can_fork %}
                 <a href="{% url 'edit_branch' branch.id %}">
                     <button class="btn btn-warning">Edit</button>

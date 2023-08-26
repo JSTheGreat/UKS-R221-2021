@@ -4,6 +4,14 @@
         <button class="btn btn-primary">Back</button>
     </a>
     <br><br>
+
+    {% if not branch.default %}
+    <a href="{% url 'set_default' branch.id %}">
+        <button class="btn btn-info">Set branch as default</button>
+    </a>
+    <br><br>
+    {% endif %}
+
     <h1>{{ branch.name }}</h1>
 
     <h6>

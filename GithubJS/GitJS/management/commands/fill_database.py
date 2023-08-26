@@ -102,32 +102,32 @@ class Command(BaseCommand):
     def _add_branches(self):
         Branch.objects.all().delete()
 
-        b1 = Branch(id=1, name="Branch 1")
+        b1 = Branch(id=1, name="Branch 1", default=True)
         b1.project = Project.objects.get(id=1)
         b1.save()
         b1.project.update_users(self._get_branch_message(b1))
 
-        b2 = Branch(id=2, name="Branch 2")
+        b2 = Branch(id=2, name="Branch 2", default=False)
         b2.project = Project.objects.get(id=1)
         b2.save()
         b2.project.update_users(self._get_branch_message(b2))
 
-        b3 = Branch(id=3, name="Branch 3")
+        b3 = Branch(id=3, name="Branch 3", default=False)
         b3.project = Project.objects.get(id=1)
         b3.save()
         b3.project.update_users(self._get_branch_message(b3))
 
-        b4 = Branch(id=4, name="Branch 4")
+        b4 = Branch(id=4, name="Branch 4", default=True)
         b4.project = Project.objects.get(id=2)
         b4.save()
         b4.project.update_users(self._get_branch_message(b4))
 
-        b5 = Branch(id=5, name="Branch 5")
+        b5 = Branch(id=5, name="Branch 5", default=True)
         b5.project = Project.objects.get(id=3)
         b5.save()
         b5.project.update_users(self._get_branch_message(b5))
 
-        b6 = Branch(id=6, name="Branch 6")
+        b6 = Branch(id=6, name="Branch 6", default=False)
         b6.project = Project.objects.get(id=3)
         b6.save()
         b6.project.update_users(self._get_branch_message(b6))
