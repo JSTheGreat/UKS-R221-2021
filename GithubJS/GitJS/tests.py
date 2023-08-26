@@ -934,3 +934,13 @@ class InitialTests(TestCase):
         self.assertIsNone(pull_request.source)
         self.assertTrue(len(Commit.objects.filter(branch=branch)) > commits_before)
         self.assertTrue(len(File.objects.filter(branch=branch)) > files_before)
+
+    def test_get_my_projects(self):
+        user = GitUser.objects.get(username='user6')
+        my_projects = user.get_my_projects()
+        self.assertEqual(len(my_projects), 2)
+
+        self.assertEqual(my_projects[0].title, 'Project 2')
+        self.assertNotEqual(my_projects[0].lead.username, user.username)
+        self.assertEqual(my_projects[1].title, 'Project 3')
+        self.assertEqual(my_projects[1].lead.username, user.username)
