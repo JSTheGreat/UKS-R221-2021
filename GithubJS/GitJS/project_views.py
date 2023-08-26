@@ -99,7 +99,7 @@ def remove_watched(request, project_id):
 def fork_project(request, project_id):
     user = get_object_or_404(GitUser, id=request.user.pk)
     for_fork = get_object_or_404(Project, id=project_id)
-    new_project = Project(id=len(Project.objects.all()) + 1, lead=user)
+    new_project = Project(id=Project.objects.all().order_by('-id')[0].id + 1, lead=user)
     needs_new_title = True
     new_title = '' + for_fork.title
     while needs_new_title:
@@ -112,7 +112,7 @@ def fork_project(request, project_id):
     new_project.save()
     for branch in Branch.objects.filter(project=for_fork):
         new_id = len(Branch.objects.all()) + 1
-        branch_copy = Branch(id=new_id, name=branch.name, project=new_project)
+        branch_copy = Branch(id=new_id, name=branch.name, project=new_project, default=branch.default)
         branch_copy.save()
     return redirect('index')
 
