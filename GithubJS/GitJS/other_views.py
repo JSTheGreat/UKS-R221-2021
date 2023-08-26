@@ -75,10 +75,15 @@ def view_pull_requests(request, project_id, state):
 @permission_required('GitJS.can_edit', raise_exception=True)
 def add_pull_request(request, project_id):
     project = get_object_or_404(Project, id=project_id)
+    if len(Branch.objects.filter(project=project, default=True)) > 0:
+        default_branch_name = Branch.objects.filter(project=project, default=True)[0].name
+    else:
+        default_branch_name = ''
     if request.method == 'GET':
         return render(request, "pr_form.html", {"title": "New pull request", "input_title": "",
                                                 'project_id': project.id,
-                                                "input_desc": "", "source_branch": "", "target_branch": "",
+                                                "input_desc": "", "source_branch": "",
+                                                "target_branch": default_branch_name,
                                                 'input_issue': '',
                                                 'branches': project.get_branches(),
                                                 'issues': project.get_issues('OPEN'),
@@ -103,8 +108,9 @@ def add_pull_request(request, project_id):
         if error_message:
             return render(request, "pr_form.html", {"error_message": error_message, 'input_issue': '',
                                                     'project_id': project.id,
-                                                    "title": "New pull request", "input_title": "",
-                                                    "input_desc": "", "source_branch": "", "target_branch": "",
+                                                    "title": "New pull request", 'input_title': '',
+                                                    "input_desc": "", "source_branch": "",
+                                                    "target_branch": default_branch_name,
                                                     'branches': project.get_branches(),
                                                     'issues': project.get_issues('OPEN'),
                                                     'form_action': str(project_id)+'/add_pull_request'})
@@ -115,7 +121,8 @@ def add_pull_request(request, project_id):
             return render(request, "pr_form.html", {"error_message": error_message, 'input_issue': '',
                                                     'project_id': project.id,
                                                     "title": "New pull request", "input_title": "",
-                                                    "input_desc": "", "source_branch": "", "target_branch": "",
+                                                    "input_desc": "", "source_branch": "",
+                                                    "target_branch": default_branch_name,
                                                     'branches': project.get_branches(),
                                                     'issues': project.get_issues('OPEN'),
                                                     'form_action': str(project_id)+'/add_pull_request'})

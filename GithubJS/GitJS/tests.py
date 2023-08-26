@@ -261,6 +261,13 @@ class InitialTests(TestCase):
         self.client.post(reverse('delete_branch', args=(1,)), context, follow=True)
         self.assertTrue(branch_size_before > len(Branch.objects.all()))
 
+        context = {'uname': 'user4', 'psw': 'user4'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        branch_size_before = len(Branch.objects.all())
+        self.client.post(reverse('delete_branch', args=(2,)), context, follow=True)
+        self.assertTrue(branch_size_before > len(Branch.objects.all()))
+
     def test_delete_branch_unsuccessful(self):
         context = {'uname': 'user2', 'psw': 'user2'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
@@ -973,3 +980,62 @@ class InitialTests(TestCase):
         projects_before = len(Project.objects.all())
         self.client.post(reverse('delete_project', args=(1,)), context, follow=True)
         self.assertTrue(len(Project.objects.all()) < projects_before)
+
+    def test_set_default(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project = Project.objects.get(id=1)
+        default_before = Branch.objects.filter(project=project, default=True)
+        self.client.post('http://localhost:8000/set_default/2', context, follow=True)
+        self.assertNotEqual(Branch.objects.filter(project=project, default=True), default_before)
+
+    def test_delete_default_branch(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project = Project.objects.get(id=1)
+        default_before = Branch.objects.filter(project=project, default=True)
+        self.client.post('http://localhost:8000/delete_branch/1', context, follow=True)
+        self.assertNotEqual(Branch.objects.filter(project=project, default=True), default_before)
+
+    def test_copy_branch_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        copied_branch = Branch.objects.get(id=3)
+        file_list_before = copied_branch.get_files()
+        commit_list_before = copied_branch.get_commits()
+        branch_size_before = len(Branch.objects.all())
+
+        context = {'new_branch': 'Copied branch'}
+        self.client.post(reverse('copy_branch', args=(3, )), context, follow=True)
+
+        new_branch = Branch.objects.get(id = Branch.objects.all().order_by('-id')[0].id)
+        file_list_after = new_branch.get_files()
+        commit_list_after = new_branch.get_commits()
+
+        self.assertTrue(len(Branch.objects.all()), branch_size_before)
+        for i in range(0, len(file_list_before)):
+            self.assertEqual(file_list_before[i].title, file_list_after[i].title)
+            self.assertEqual(file_list_before[i].text, file_list_after[i].text)
+        for i in range(0, len(commit_list_before)):
+            self.assertEqual(commit_list_before[i].log_message, commit_list_after[i].log_message)
+            self.assertEqual(commit_list_before[i].date_time, commit_list_after[i].date_time)
+            self.assertEqual(commit_list_before[i].committer, commit_list_after[i].committer)
+
+    def test_copy_branch_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_branch': '  '}
+        response = self.client.post(reverse('copy_branch', args=(3,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], "Branch name can't be empty")
+
+        context = {'new_branch': 'Branch 1'}
+        response = self.client.post(reverse('copy_branch', args=(3,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], "Branch name already exists")
+
+        context = {'new_branch': 'Branch 3'}
+        response = self.client.post(reverse('copy_branch', args=(3,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], "Branch name already exists")
