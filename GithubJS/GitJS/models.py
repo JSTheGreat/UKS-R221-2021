@@ -6,7 +6,12 @@ from django.utils import timezone
 class GitUser(User):
 
     def get_my_projects(self):
-        return Project.objects.filter(lead=self)
+        all_projects = Project.objects.all()
+        my_projects = []
+        for project in all_projects:
+            if project.can_edit(self.username):
+                my_projects.append(project)
+        return my_projects
 
     def get_starred_projects(self):
         starred_projects = StarredProject.objects.filter(user_id=self.pk)
