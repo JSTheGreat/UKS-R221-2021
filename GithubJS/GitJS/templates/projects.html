@@ -13,4 +13,13 @@
     {% endfor %}
     </ul>
 
+    <br><br>
+    {% if can_add %}
+    <a href="{% url 'add_project' %}">
+        <button class="btn btn-success">
+            New project
+        </button>
+    </a>
+    {% endif %}
+
 {% endblock %}

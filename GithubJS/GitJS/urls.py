@@ -6,6 +6,8 @@ from . import views, project_views, branch_views, milestone_views, file_views, \
 urlpatterns = [
     path("", views.index, name="index"),
     path("<int:project_id>/", project_views.single_project, name="single_project"),
+    path("add_project", project_views.add_project, name="add_project"),
+    path("delete_project/<int:project_id>", project_views.delete_project, name="delete_project"),
     path("branch/<int:branch_id>", file_views.single_branch, name="single_branch"),
     path("<int:project_id>/add_branch/", branch_views.add_branch, name="add_branch"),
     path("delete_branch/<int:branch_id>", branch_views.delete_branch, name="delete_branch"),

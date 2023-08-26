@@ -46,7 +46,8 @@ def starred_projects(request):
 @permission_required('GitJS.can_view', raise_exception=True)
 def my_projects(request):
     user = get_object_or_404(GitUser, id=request.user.pk)
-    return render(request, 'projects.html', {'title': 'My projects', 'projects': user.get_my_projects()})
+    return render(request, 'projects.html', {'title': 'My projects', 'projects': user.get_my_projects(),
+                                             'can_add': True})
 
 
 @login_required(login_url='login/')
@@ -145,3 +146,35 @@ def remove_contributor(request, project_id, username):
     contributor = Contributor.objects.get(username=username, project_id=project_id)
     contributor.delete()
     return HttpResponseRedirect(reverse("single_project", args=(project.id,)))
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_edit', raise_exception=True)
+def add_project(request):
+    user = get_object_or_404(GitUser, id=request.user.pk)
+    if request.method == 'GET':
+        return render(request, 'project_form.html', {'input_value': ''})
+    else:
+        new_title = request.POST['new_title'].strip()
+
+        error_message = ''
+        if new_title is None or new_title == '':
+            error_message = 'Project name can\'t be empty'
+        elif len(Project.objects.filter(lead=user, title=new_title)) > 0:
+            error_message = 'Project with given title already exists'
+
+        if error_message:
+            return render(request, 'project_form.html', {'input_value': '', 'error_message': error_message})
+
+        new_id = Project.objects.all().order_by('-id')[0].id + 1
+        new_project = Project(id=new_id, title=new_title, lead=user)
+        new_project.save()
+        return HttpResponseRedirect(reverse("single_project", args=(new_id,)))
+
+
+@login_required(login_url='login/')
+@permission_required('GitJS.can_edit', raise_exception=True)
+def delete_project(request, project_id):
+    project = get_object_or_404(Project, id=project_id)
+    project.delete()
+    return redirect('my_projects')

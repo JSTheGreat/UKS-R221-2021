@@ -934,3 +934,42 @@ class InitialTests(TestCase):
         self.assertIsNone(pull_request.source)
         self.assertTrue(len(Commit.objects.filter(branch=branch)) > commits_before)
         self.assertTrue(len(File.objects.filter(branch=branch)) > files_before)
+
+    def test_get_my_projects(self):
+        user = GitUser.objects.get(username='user6')
+        my_projects = user.get_my_projects()
+        self.assertEqual(len(my_projects), 2)
+
+        self.assertEqual(my_projects[0].title, 'Project 2')
+        self.assertNotEqual(my_projects[0].lead.username, user.username)
+        self.assertEqual(my_projects[1].title, 'Project 3')
+        self.assertEqual(my_projects[1].lead.username, user.username)
+
+    def test_add_project_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        projects_before = len(Project.objects.all())
+        context = {'new_title': 'New project title'}
+        self.client.post('http://localhost:8000/add_project', context, follow=True)
+        self.assertTrue(len(Project.objects.all()) > projects_before)
+
+    def test_add_project_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  '}
+        response = self.client.post('http://localhost:8000/add_project', context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Project name can\'t be empty')
+
+        context = {'new_title': 'Project 1'}
+        response = self.client.post('http://localhost:8000/add_project', context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Project with given title already exists')
+
+    def test_delete_project(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        projects_before = len(Project.objects.all())
+        self.client.post(reverse('delete_project', args=(1,)), context, follow=True)
+        self.assertTrue(len(Project.objects.all()) < projects_before)

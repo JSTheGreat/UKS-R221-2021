@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
+    {% if not can_fork %}
+    <a href="{% url 'delete_project' project.id %}">
+        <button class="btn btn-danger">DELETE PROJECT</button>
+    </a>
+    <br><br>
+    {% endif %}
+
     <h1>{{ project.title }}</h1>
     <div>
         {% if starred %}
