@@ -12,27 +12,32 @@ def single_project(request, project_id):
     project = get_object_or_404(Project, id=project_id)
     user = get_object_or_404(GitUser, id=request.user.pk)
     can_fork = project.lead.id != user.id
+    can_edit = project.can_edit(user.username)
     try:
         starred = StarredProject.objects.get(project_id=project_id, user_id=request.user.pk)
         try:
             watched = WatchedProject.objects.get(project_id=project_id, user_id=request.user.pk)
             return render(request, 'project_view.html', {'title': project.title, "project": project,
                                                          "starred": True, "watched": True, "can_fork": can_fork,
-                                                         'comments': project.get_comments(user.username)})
+                                                         'comments': project.get_comments(user.username),
+                                                         'can_edit': can_edit})
         except:
             return render(request, 'project_view.html', {'title': project.title, "project": project,
                                                          "starred": True, "watched": False, "can_fork": can_fork,
-                                                         'comments': project.get_comments(user.username)})
+                                                         'comments': project.get_comments(user.username),
+                                                         'can_edit': can_edit})
     except:
         try:
             watched = WatchedProject.objects.get(project_id=project_id, user_id=request.user.pk)
             return render(request, 'project_view.html', {'title': project.title, "project": project,
                                                          "starred": False, "watched": True, "can_fork": can_fork,
-                                                         'comments': project.get_comments(user.username)})
+                                                         'comments': project.get_comments(user.username),
+                                                         'can_edit': can_edit})
         except:
             return render(request, 'project_view.html', {'title': project.title, "project": project,
                                                          "starred": False, "watched": False, "can_fork": can_fork,
-                                                         'comments': project.get_comments(user.username)})
+                                                         'comments': project.get_comments(user.username),
+                                                         'can_edit': can_edit})
 
 
 @login_required(login_url='login/')

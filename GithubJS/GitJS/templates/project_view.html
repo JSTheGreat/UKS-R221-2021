@@ -64,7 +64,10 @@
             {% else %}
                 <a href="{% url 'single_branch' branch.id %}">{{ branch.name }}</a>
             {% endif %}
-            {% if not can_fork %}
+            {% if can_edit %}
+                <a href="{% url 'copy_branch' branch.id %}">
+                    <button class="btn btn-primary">Copy</button>
+                </a>
                 <a href="{% url 'edit_branch' branch.id %}">
                     <button class="btn btn-warning">Edit</button>
                 </a>
@@ -76,7 +79,7 @@
     {% endfor %}
     </ul>
 
-    {% if not can_fork %}
+    {% if can_edit %}
         <br>
         <a href="{% url 'add_branch' project.id %}">
             <button class="btn btn-success">Add branch</button>
