@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views, project_views, branch_views, milestone_views, file_views, \
-    other_views, issue_views
+    other_views, issue_views, pull_request_views
 
 urlpatterns = [
     path("", views.index, name="index"),
@@ -48,10 +48,11 @@ urlpatterns = [
     path('toggle_issue/<int:issue_id>', issue_views.toggle_issue_status, name='toggle_issue'),
     path('milestone_issues/<int:milestone_id>/<str:state>', issue_views.get_milestone_issues, name='milestone_issues'),
     path('commits/<int:branch_id>', branch_views.get_commit_history, name='commits'),
-    path('pull_requests/<int:project_id>/<str:state>', other_views.view_pull_requests, name='pull_requests'),
-    path('<int:project_id>/add_pull_request', other_views.add_pull_request, name='add_pull_request'),
-    path('edit_pull_request/<int:pr_id>', other_views.edit_pull_request, name='edit_pull_request'),
-    path('toggle_request_state/<int:pr_id>', other_views.toggle_request_state, name='toggle_request_state'),
-    path('get_merge_changes/<int:pr_id>', other_views.get_merge_changes, name='get_merge_changes'),
-    path('merge_request/<int:pr_id>', other_views.merge_request, name='merge_request')
+    path('pull_requests/<int:project_id>/<str:state>', pull_request_views.view_pull_requests, name='pull_requests'),
+    path('<int:project_id>/add_pull_request', pull_request_views.add_pull_request, name='add_pull_request'),
+    path('edit_pull_request/<int:pr_id>', pull_request_views.edit_pull_request, name='edit_pull_request'),
+    path('toggle_request_state/<int:pr_id>', pull_request_views.toggle_request_state, name='toggle_request_state'),
+    path('get_merge_changes/<int:pr_id>', pull_request_views.get_merge_changes, name='get_merge_changes'),
+    path('merge_request/<int:pr_id>', pull_request_views.merge_request, name='merge_request'),
+    path('search_app', other_views.search_app, name='search_app')
 ]
