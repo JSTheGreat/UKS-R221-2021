@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
+    <a href="{% url 'single_project' project_id %}">
+        <button class="btn btn-primary">Back</button>
+    </a>
+    <br><br>
+
     <h2>{{ title }}</h2>
 
     {% if input_title != '' %}
@@ -13,21 +18,25 @@
     <fieldset>
         {% if error_message %}<p class="error"><strong>{{ error_message }}</strong></p>{% endif %}
         <label for="new_title">Title</label><br>
-        <input type="text" name="new_title" id="new_title" value="{{input_title}}" class="form-control" required>
+        <input type="text" name="new_title" id="new_title" value="{{input_title}}" class="form-control" required
+            {% if not can_edit %} disabled {% endif %}>
 
         <label for="new_desc">Description</label><br>
         <textarea class="form-control" type="text" name="new_desc" id="new_desc"
-                  rows="3" required>{{input_desc}}</textarea>
+                  rows="3" required {% if not can_edit %} disabled {% endif %}>{{input_desc}}</textarea>
 
         <label for="due_date">Due date</label><br>
-        <input type="date" name="due_date" id="due_date" value="{{due_date}}" class="form-control" required>
+        <input type="date" name="due_date" id="due_date" value="{{due_date}}" class="form-control" required
+            {% if not can_edit %} disabled {% endif %}>
     </fieldset>
 
+    {% if can_edit %}
         <br>
-    {% if input_title == '' %}
-        <input type="submit" value="Add" class="btn btn-success">
-    {% else %}
-        <input type="submit" value="Change" class="btn btn-warning">
+        {% if input_title == '' %}
+            <input type="submit" value="Add" class="btn btn-success">
+        {% else %}
+            <input type="submit" value="Change" class="btn btn-warning">
+        {% endif %}
     {% endif %}
     </form>
 {% endblock %}

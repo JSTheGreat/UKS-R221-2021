@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+    <a href="{% url 'my_projects' %}">
+        <button class="btn btn-primary">Back</button>
+    </a>
+    <br><br>
+    <h2>New project</h2>
+    <br>
+    <form action="{% url 'add_project' %}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        {% if error_message %}<p class="error"><strong>{{ error_message }}</strong></p>{% endif %}
+        <label for="new_title">Project title</label><br>
+        <input type="text" name="new_title" id="new_title" value="{{input_value}}">
+    </fieldset>
+    <br>
+    <input type="submit" value="Add" class="btn btn-success">
+
+    </form>
+{% endblock %}

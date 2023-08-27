@@ -1,5 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
+    {% if project_id %}
+        <a href="{% url 'single_project' project_id %}">
+            <button class="btn btn-primary">Back</button>
+        </a>
+        <br><br>
+    {% else %}
+        <a href="{% url 'milestones' project.id 'OPEN' %}">
+            <button class="btn btn-primary">Back</button>
+        </a>
+        <br><br>
+    {% endif %}
+
     <h1>{{ title }}</h1>
 
     <br>
@@ -36,6 +48,12 @@
                 {% else %}
                 <a href="{% url 'toggle_issue' issue.id %}">
                     <button class="btn btn-info">Reopen</button>
+                </a>
+                {% endif %}
+            {% else %}
+                {% if issue.state == 'OPEN' %}
+                <a href="{% url 'edit_issue' issue.id %}">
+                    <button class="btn btn-info">View</button>
                 </a>
                 {% endif %}
             {% endif %}

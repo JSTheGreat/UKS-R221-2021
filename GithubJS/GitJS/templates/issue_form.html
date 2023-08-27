@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
+    <a href="{% url 'issues' project_id 'OPEN' %}">
+        <button class="btn btn-primary">Back</button>
+    </a>
+    <br><br>
     <h2>{{ title }}</h2>
 
     <br>
@@ -8,14 +12,16 @@
     <fieldset>
         {% if error_message %}<p class="error"><strong>{{ error_message }}</strong></p>{% endif %}
         <label for="new_title">Title</label><br>
-        <input type="text" name="new_title" id="new_title" value="{{input_title}}" class="form-control" required>
+        <input type="text" name="new_title" id="new_title" value="{{input_title}}" class="form-control" required
+            {% if not can_edit %} disabled {% endif %}>
 
         <label for="new_desc">Description</label><br>
         <textarea class="form-control" type="text" name="new_desc" id="new_desc"
-                  rows="3">{{input_desc}}</textarea>
+                  rows="3" {% if not can_edit %} disabled {% endif %}>{{input_desc}}</textarea>
 
         <label for="assignee">Assignee</label><br>
-        <select class="form-control" id="assignee" name="assignee">
+        <select class="form-control" id="assignee" name="assignee"
+            {% if not can_edit %} disabled {% endif %}>
             <option>None</option>
             {% for participant in participants %}
                 {% if participant == input_assignee %}
@@ -27,7 +33,8 @@
         </select>
 
         <label for="milestone">Milestone</label><br>
-        <select class="form-control" id="milestone" name="milestone">
+        <select class="form-control" id="milestone" name="milestone"
+            {% if not can_edit %} disabled {% endif %}>
             <option>None</option>
             {% for milestone in milestones %}
                 {% if milestone.title == input_milestone %}
@@ -39,11 +46,13 @@
         </select>
     </fieldset>
 
-        <br>
-    {% if input_title == '' %}
-        <input type="submit" value="Add" class="btn btn-success">
-    {% else %}
-        <input type="submit" value="Change" class="btn btn-warning">
+    {% if can_edit %}
+            <br>
+        {% if input_title == '' %}
+            <input type="submit" value="Add" class="btn btn-success">
+        {% else %}
+            <input type="submit" value="Change" class="btn btn-warning">
+        {% endif %}
     {% endif %}
     </form>
 {% endblock %}

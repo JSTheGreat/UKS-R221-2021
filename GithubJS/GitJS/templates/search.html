@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <br>
+    <form action="{% url 'search_app' %}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        <input type="checkbox" id="include_projects" name="include_projects"
+           {% if projects_checked %} checked {% endif %}>
+        <label>Projects</label>
+        <input type="checkbox" id="include_branches" name="include_branches"
+            {% if branches_checked %} checked {% endif %}>
+        <label>Branches</label>
+        <input type="checkbox" id="include_files" name="include_files"
+            {% if files_checked %} checked {% endif %}>
+        <label>Files</label>
+        <input type="checkbox" id="include_issues" name="include_issues"
+            {% if issues_checked %} checked {% endif %}>
+        <label>Issues</label>
+        <input type="checkbox" id="include_milestones" name="include_milestones"
+            {% if milestones_checked %} checked {% endif %}>
+        <label>Milestones</label>
+        <input type="checkbox" id="include_pull_requests" name="include_pull_requests"
+            {% if requests_checked %} checked {% endif %}>
+        <label>Pull requests</label>
+        <br>
+        <input class="form-control" type="text" name="search_value" id="search_value"
+            placeholder="Enter input for search" value="{{input_value}}">
+    </fieldset>
+        <br>
+        <input type="submit" value="Search" class="btn btn-primary">
+    </form>
+
+    {% if projects %}
+        <br>
+        <p>Projects: </p>
+        {% for project in projects %}
+            <a href="{% url 'single_project' project.id %}">
+                {{project.lead.username}}/{{project.title}}
+            </a>
+            <br>
+        {% endfor %}
+    {% endif %}
+
+    {% if branches %}
+        <br>
+        <p>Branches: </p>
+        {% for branch in branches %}
+            <a href="{% url 'single_branch' branch.id %}">
+                {{branch.project.lead.username}}/{{branch.project.title}}/{{branch.name}}
+            </a>
+            <br>
+        {% endfor %}
+    {% endif %}
+
+    {% if files %}
+        <br>
+        <p>Files: </p>
+        {% for file in files %}
+            <a href="{% url 'edit_file' file.id %}">
+                {{file.branch.project.lead.username}}/{{file.branch.project.title}}/{{file.branch.name}}/
+                {{file.title}}
+            </a>
+            <br>
+        {% endfor %}
+    {% endif %}
+
+    {% if issues %}
+        <br>
+        <p>Issues: </p>
+        {% for issue in issues %}
+            <a href="{% url 'edit_issue' issue.id %}">
+                {{issue.project.lead.username}}/{{issue.project.title}} - {{issue.title}}
+            </a>
+            <br>
+        {% endfor %}
+    {% endif %}
+
+    {% if milestones %}
+        <br>
+        <p>Milestones: </p>
+        {% for milestone in milestones %}
+            <a href="{% url 'edit_milestone' milestone.id %}">
+                {{milestone.project.lead.username}}/{{milestone.project.title}} - {{milestone.title}}
+            </a>
+            <br>
+        {% endfor %}
+    {% endif %}
+
+    {% if pull_requests %}
+        <br>
+        <p>Pull requests: </p>
+        {% for pull_request in pull_requests %}
+            <a href="{% url 'edit_pull_request' pull_request.id %}">
+                {{pull_request.project.lead.username}}/{{pull_request.project.title}} - {{pull_request.title}}
+            </a>
+            <br>
+        {% endfor %}
+    {% endif %}
+
+{% endblock %}

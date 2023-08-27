@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
+    <a href="{% url 'single_project' project_id %}">
+        <button class="btn btn-primary">Back</button>
+    </a>
+    <br><br>
+
     <h1>{{ title }}</h1>
 
     <br>
@@ -15,7 +20,7 @@
     <ul class="list-group">
     {% for pr in pull_requests %}
         <div class="list-group">
-        <a href="{% url 'get_merge_changes' pr.id %}"
+        <a {% if can_edit %} href="{% url 'get_merge_changes' pr.id %}" {% endif %}
            class="list-group-item list-group-item-action flex-column align-items-start">
             <div class="d-flex w-100 justify-content-between">
               <h5>{{pr.title}}</h5>
@@ -29,17 +34,25 @@
                 <p class="mb-1">Issue: {{pr.issue.title}}</p>
             {% endif %}
             <small>
-                {% if pr.state == 'OPEN' %}
-                    <a href="{% url 'edit_pull_request' pr.id %}">
-                        <button class="btn btn-warning">Edit</button>
-                    </a>
-                    <a href="{% url 'toggle_request_state' pr.id %}">
-                        <button class="btn btn-danger">Close</button>
-                    </a>
-                {% elif pr.state == 'CLOSED' %}
-                    <a href="{% url 'toggle_request_state' pr.id %}">
-                        <button class="btn btn-info">Reopen</button>
-                    </a>
+                {% if can_edit %}
+                    {% if pr.state == 'OPEN' %}
+                        <a href="{% url 'edit_pull_request' pr.id %}">
+                            <button class="btn btn-warning">Edit</button>
+                        </a>
+                        <a href="{% url 'toggle_request_state' pr.id %}">
+                            <button class="btn btn-danger">Close</button>
+                        </a>
+                    {% elif pr.state == 'CLOSED' %}
+                        <a href="{% url 'toggle_request_state' pr.id %}">
+                            <button class="btn btn-info">Reopen</button>
+                        </a>
+                    {% endif %}
+                {% else %}
+                    {% if pr.state == 'OPEN' %}
+                        <a href="{% url 'edit_pull_request' pr.id %}">
+                            <button class="btn btn-info">View</button>
+                        </a>
+                    {% endif %}
                 {% endif %}
             </small>
         </a>
@@ -47,9 +60,11 @@
     {% endfor %}
     </ul>
 
+    {% if can_edit %}
     <br>
     <a href="{% url 'add_pull_request' project_id %}">
         <button class="btn btn-success">Add pull request</button>
     </a>
+    {% endif %}
 
 {% endblock %}

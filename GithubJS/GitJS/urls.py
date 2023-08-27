@@ -1,15 +1,19 @@
 from django.urls import path
 
 from . import views, project_views, branch_views, milestone_views, file_views, \
-    other_views, issue_views
+    other_views, issue_views, pull_request_views
 
 urlpatterns = [
     path("", views.index, name="index"),
     path("<int:project_id>/", project_views.single_project, name="single_project"),
+    path("add_project", project_views.add_project, name="add_project"),
+    path("delete_project/<int:project_id>", project_views.delete_project, name="delete_project"),
     path("branch/<int:branch_id>", file_views.single_branch, name="single_branch"),
     path("<int:project_id>/add_branch/", branch_views.add_branch, name="add_branch"),
     path("delete_branch/<int:branch_id>", branch_views.delete_branch, name="delete_branch"),
     path("edit_branch/<int:branch_id>", branch_views.edit_branch, name="edit_branch"),
+    path('set_default/<int:branch_id>', branch_views.set_default, name="set_default"),
+    path('copy_branch/<int:branch_id>', branch_views.copy_branch, name="copy_branch"),
     path("testredis/", views.cached_initial, name="test_redis_page"),
     path('login/', views.git_login, name='git_login'),
     path('logout/', views.git_logout, name='git_logout'),
@@ -27,7 +31,7 @@ urlpatterns = [
     path('milestones/<int:project_id>/<str:state>', milestone_views.get_milestones, name='milestones'),
     path('<int:project_id>/add_milestone', milestone_views.add_milestone, name='add_milestone'),
     path('edit_milestone/<int:milestone_id>', milestone_views.edit_milestone, name='edit_milestone'),
-    path('delete_milestone/<int:milestone_id>', milestone_views.delete_milestone, name='delete_milestone'),
+    path('toggle_milestone/<int:milestone_id>', milestone_views.toggle_milestone_status, name='toggle_milestone'),
     path('<int:branch_id>/add_file', file_views.add_file, name='add_file'),
     path('edit_file/<int:file_id>', file_views.edit_file, name='edit_file'),
     path('delete_file/<int:file_id>', file_views.delete_file, name='delete_file'),
@@ -44,10 +48,11 @@ urlpatterns = [
     path('toggle_issue/<int:issue_id>', issue_views.toggle_issue_status, name='toggle_issue'),
     path('milestone_issues/<int:milestone_id>/<str:state>', issue_views.get_milestone_issues, name='milestone_issues'),
     path('commits/<int:branch_id>', branch_views.get_commit_history, name='commits'),
-    path('pull_requests/<int:project_id>/<str:state>', other_views.view_pull_requests, name='pull_requests'),
-    path('<int:project_id>/add_pull_request', other_views.add_pull_request, name='add_pull_request'),
-    path('edit_pull_request/<int:pr_id>', other_views.edit_pull_request, name='edit_pull_request'),
-    path('toggle_request_state/<int:pr_id>', other_views.toggle_request_state, name='toggle_request_state'),
-    path('get_merge_changes/<int:pr_id>', other_views.get_merge_changes, name='get_merge_changes'),
-    path('merge_request/<int:pr_id>', other_views.merge_request, name='merge_request')
+    path('pull_requests/<int:project_id>/<str:state>', pull_request_views.view_pull_requests, name='pull_requests'),
+    path('<int:project_id>/add_pull_request', pull_request_views.add_pull_request, name='add_pull_request'),
+    path('edit_pull_request/<int:pr_id>', pull_request_views.edit_pull_request, name='edit_pull_request'),
+    path('toggle_request_state/<int:pr_id>', pull_request_views.toggle_request_state, name='toggle_request_state'),
+    path('get_merge_changes/<int:pr_id>', pull_request_views.get_merge_changes, name='get_merge_changes'),
+    path('merge_request/<int:pr_id>', pull_request_views.merge_request, name='merge_request'),
+    path('search_app', other_views.search_app, name='search_app')
 ]

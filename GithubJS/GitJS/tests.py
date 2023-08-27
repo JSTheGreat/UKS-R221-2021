@@ -16,6 +16,7 @@ class InitialTests(TestCase):
         # instantiate client for each test
         self.client = Client()
 
+    # method only used in initial testing
     def test_branch_count(self):
         p1 = Project.objects.get(id=1)
         self.assertIs(p1.get_branch_number(), 3)
@@ -94,10 +95,12 @@ class InitialTests(TestCase):
 
         self.client.logout()
 
+        # logging in with old username
         context = {'uname': 'user1', 'psw': 'user1'}
         response = self.client.post('http://localhost:8000/login/', context, follow=True)
         self.assertTrue(response.context['login_has_error'])
 
+        # logging in with new username
         context = {'uname': 'user1-new', 'psw': 'user1'}
         response = self.client.post('http://localhost:8000/login/', context, follow=True)
         self.assertRedirects(response, '/')
@@ -232,6 +235,26 @@ class InitialTests(TestCase):
         response = self.client.get('http://localhost:8000/my_projects', follow=True)
         self.assertTrue(len(response.context['projects']) > size_before)
 
+        forked = Project.objects.get(id=2)
+        new_project = Project.objects.get(id=Project.objects.all().order_by('-id')[0].id)
+
+        self.assertIsNone(forked.forked_from)
+        # link will be rendered if not none
+        self.assertIsNotNone(new_project.forked_from)
+        self.assertEqual(forked.title, new_project.title)
+
+        # testing if all branches copied
+        for i in range(0, len(forked.get_branches())):
+            self.assertEqual(forked.get_branches()[i].name, new_project.get_branches()[i].name)
+            # testing if all files copied
+            for j in range(0, len(forked.get_branches()[i].get_files())):
+                self.assertEqual(forked.get_branches()[i].get_files()[j].title,
+                                 new_project.get_branches()[i].get_files()[j].title)
+            # testing if all commits copied
+            for j in range(0, len(forked.get_branches()[i].get_commits())):
+                self.assertEqual(forked.get_branches()[i].get_commits()[j].log_message,
+                                 new_project.get_branches()[i].get_commits()[j].log_message)
+
     def test_edit_branch_successful(self):
         context = {'uname': 'user1', 'psw': 'user1'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
@@ -245,10 +268,12 @@ class InitialTests(TestCase):
         context = {'uname': 'user1', 'psw': 'user1'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
+        # testing with empty branch name
         context = {'new_branch': '  '}
         response = self.client.post(reverse('edit_branch', args=(1,)), context, follow=True)
         self.assertEqual(response.context['error_message'], 'Branch name can\'t be empty')
 
+        # testing with already existing branch
         context = {'new_branch': 'Branch 2'}
         response = self.client.post(reverse('edit_branch', args=(1,)), context, follow=True)
         self.assertEqual(response.context['error_message'], 'Branch name already exists')
@@ -259,6 +284,15 @@ class InitialTests(TestCase):
 
         branch_size_before = len(Branch.objects.all())
         self.client.post(reverse('delete_branch', args=(1,)), context, follow=True)
+        self.assertTrue(branch_size_before > len(Branch.objects.all()))
+
+        # testing if other contributors can delete as well
+
+        context = {'uname': 'user4', 'psw': 'user4'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        branch_size_before = len(Branch.objects.all())
+        self.client.post(reverse('delete_branch', args=(2,)), context, follow=True)
         self.assertTrue(branch_size_before > len(Branch.objects.all()))
 
     def test_delete_branch_unsuccessful(self):
@@ -344,20 +378,18 @@ class InitialTests(TestCase):
         response = self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
         self.assertEqual('Milestone with given title already exists', response.context['error_message'])
 
-    def test_delete_milestone_succeful(self):
+    def test_toggle_milestone(self):
         context = {'uname': 'user1', 'psw': 'user1'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
-        size_before = len(Milestone.objects.all())
-        self.client.post(reverse('delete_milestone', args=(1,)), context, follow=True)
-        self.assertTrue(size_before > len(Milestone.objects.all()))
+        # closing
+        self.assertEqual(Milestone.objects.get(id=1).state, 'OPEN')
+        self.client.post(reverse('toggle_milestone', args=(1,)), context, follow=True)
+        self.assertEqual(Milestone.objects.get(id=1).state, 'CLOSED')
 
-    def test_delete_milestone_unsuccessful(self):
-        context = {'uname': 'user2', 'psw': 'user2'}
-        self.client.post('http://localhost:8000/login/', context, follow=True)
-
-        response = self.client.post(reverse('delete_milestone', args=(1,)), context, follow=True)
-        self.assertEqual(response.status_code, 403)
+        # reopening
+        self.client.post(reverse('toggle_milestone', args=(1,)), context, follow=True)
+        self.assertEqual(Milestone.objects.get(id=1).state, 'OPEN')
 
     def test_get_contributors(self):
         project1 = Project.objects.get(id=1)
@@ -762,6 +794,7 @@ class InitialTests(TestCase):
         self.assertEqual(branch.get_file_by_title('File 2').title, 'File 2')
         self.assertIsNone(branch.get_file_by_title('File 3'))
 
+        # in the case of several branches having a file with the same name
         branch = Branch.objects.get(id=2)
         self.assertEqual(branch.get_file_by_title('File 1').title, 'File 1')
         self.assertEqual(branch.get_file_by_title('File 1').text, 'Generic text for file 1 on branch 2')
@@ -934,3 +967,162 @@ class InitialTests(TestCase):
         self.assertIsNone(pull_request.source)
         self.assertTrue(len(Commit.objects.filter(branch=branch)) > commits_before)
         self.assertTrue(len(File.objects.filter(branch=branch)) > files_before)
+
+    def test_get_my_projects(self):
+        user = GitUser.objects.get(username='user6')
+        my_projects = user.get_my_projects()
+        self.assertEqual(len(my_projects), 2)
+
+        self.assertEqual(my_projects[0].title, 'Project 2')
+        self.assertNotEqual(my_projects[0].lead.username, user.username)
+        self.assertEqual(my_projects[1].title, 'Project 3')
+        self.assertEqual(my_projects[1].lead.username, user.username)
+
+    def test_add_project_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        projects_before = len(Project.objects.all())
+        context = {'new_title': 'New project title'}
+        self.client.post('http://localhost:8000/add_project', context, follow=True)
+        self.assertTrue(len(Project.objects.all()) > projects_before)
+
+    def test_add_project_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_title': '  '}
+        response = self.client.post('http://localhost:8000/add_project', context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Project name can\'t be empty')
+
+        context = {'new_title': 'Project 1'}
+        response = self.client.post('http://localhost:8000/add_project', context, follow=True)
+        self.assertEqual(response.context['error_message'], 'Project with given title already exists')
+
+    def test_delete_project(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        projects_before = len(Project.objects.all())
+        self.client.post(reverse('delete_project', args=(1,)), context, follow=True)
+        self.assertTrue(len(Project.objects.all()) < projects_before)
+
+    def test_set_default(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project = Project.objects.get(id=1)
+        default_before = Branch.objects.filter(project=project, default=True)
+        self.client.post('http://localhost:8000/set_default/2', context, follow=True)
+        self.assertNotEqual(Branch.objects.filter(project=project, default=True), default_before)
+
+    def test_delete_default_branch(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        project = Project.objects.get(id=1)
+        default_before = Branch.objects.filter(project=project, default=True)
+        self.client.post('http://localhost:8000/delete_branch/1', context, follow=True)
+        self.assertNotEqual(Branch.objects.filter(project=project, default=True), default_before)
+
+    def test_copy_branch_successful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        copied_branch = Branch.objects.get(id=3)
+        file_list_before = copied_branch.get_files()
+        commit_list_before = copied_branch.get_commits()
+        branch_size_before = len(Branch.objects.all())
+
+        context = {'new_branch': 'Copied branch'}
+        self.client.post(reverse('copy_branch', args=(3, )), context, follow=True)
+
+        new_branch = Branch.objects.get(id = Branch.objects.all().order_by('-id')[0].id)
+        file_list_after = new_branch.get_files()
+        commit_list_after = new_branch.get_commits()
+
+        # testing if all files and commits were copied as well
+        self.assertTrue(len(Branch.objects.all()), branch_size_before)
+        for i in range(0, len(file_list_before)):
+            self.assertEqual(file_list_before[i].title, file_list_after[i].title)
+            self.assertEqual(file_list_before[i].text, file_list_after[i].text)
+        for i in range(0, len(commit_list_before)):
+            self.assertEqual(commit_list_before[i].log_message, commit_list_after[i].log_message)
+            self.assertEqual(commit_list_before[i].date_time, commit_list_after[i].date_time)
+            self.assertEqual(commit_list_before[i].committer, commit_list_after[i].committer)
+
+    def test_copy_branch_unsuccessful(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        context = {'new_branch': '  '}
+        response = self.client.post(reverse('copy_branch', args=(3,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], "Branch name can't be empty")
+
+        # branch name has to be unique and can't even be the same as the branch being copied
+
+        context = {'new_branch': 'Branch 1'}
+        response = self.client.post(reverse('copy_branch', args=(3,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], "Branch name already exists")
+
+        context = {'new_branch': 'Branch 3'}
+        response = self.client.post(reverse('copy_branch', args=(3,)), context, follow=True)
+        self.assertEqual(response.context['error_message'], "Branch name already exists")
+
+    def test_search_app(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        search_value = ' 1 '
+        context = {'search_value': search_value, 'include_projects': True, 'include_branches': True,
+                   'include_issues': True, 'include_files': True}
+        response = self.client.post(reverse('search_app'), context, follow=True)
+        self.assertIsNotNone(response.context['projects'])
+        for project in response.context['projects']:
+            self.assertTrue(search_value.strip() in project.title)
+        self.assertIsNotNone(response.context['branches'])
+        for branch in response.context['branches']:
+            self.assertTrue(search_value.strip() in branch.name)
+        self.assertIsNotNone(response.context['issues'])
+        for issue in response.context['issues']:
+            self.assertTrue(search_value.strip() in issue.title)
+        self.assertIsNotNone(response.context['files'])
+        for file in response.context['files']:
+            self.assertTrue(search_value.strip() in file.title)
+
+        search_value = '  ect  '
+        context = {'search_value': search_value, 'include_projects': True, 'include_branches': True,
+                   'include_issues': True, 'include_files': True}
+        response = self.client.post(reverse('search_app'), context, follow=True)
+        self.assertIsNotNone(response.context['projects'])
+        for project in response.context['projects']:
+            self.assertTrue(search_value.strip() in project.title)
+        self.assertTrue(len(response.context['branches']) == 0)
+        self.assertTrue(len(response.context['issues']) == 0)
+        self.assertTrue(len(response.context['files']) == 0)
+
+        search_value = ' Nonexistant '
+        context = {'search_value': search_value, 'include_projects': True, 'include_branches': True,
+                   'include_issues': True, 'include_files': True}
+        response = self.client.post(reverse('search_app'), context, follow=True)
+        self.assertTrue(len(response.context['projects']) == 0)
+        self.assertTrue(len(response.context['branches']) == 0)
+        self.assertTrue(len(response.context['issues']) == 0)
+        self.assertTrue(len(response.context['files']) == 0)
+
+        search_value = '  ect  '
+        context = {'search_value': search_value, 'include_branches': True,
+                   'include_issues': True, 'include_files': True}
+        response = self.client.post(reverse('search_app'), context, follow=True)
+        self.assertIsNone(response.context['projects'])
+        self.assertTrue(len(response.context['branches']) == 0)
+        self.assertTrue(len(response.context['issues']) == 0)
+        self.assertTrue(len(response.context['files']) == 0)
+
+        search_value = '1'
+        context = {'search_value': search_value}
+        response = self.client.post(reverse('search_app'), context, follow=True)
+        self.assertIsNone(response.context['projects'])
+        self.assertIsNone(response.context['branches'])
+        self.assertIsNone(response.context['issues'])
+        self.assertIsNone(response.context['files'])

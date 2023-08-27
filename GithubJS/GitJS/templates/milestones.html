@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
+    <a href="{% url 'single_project' project_id %}">
+        <button class="btn btn-primary">Back</button>
+    </a>
+    <br><br>
+
     <h1>{{ title }}</h1>
 
     <br>
@@ -15,24 +20,41 @@
     {% for milestone in milestones %}
         <li class="list-group-item">
             {{milestone.title}} - {{milestone.due_date}}
-            <a href="{% url 'milestone_issues' milestone.id 'OPEN' %}">
-                <button class="btn btn-info">Issues</button>
-            </a>
-            {% if milestone.state == 'OPEN' %}
-            <a href="{% url 'edit_milestone' milestone.id %}">
-                <button class="btn btn-warning">Edit</button>
-            </a>
-            <a href="{% url 'delete_milestone' milestone.id %}">
-                <button class="btn btn-danger">Delete</button>
-            </a>
+            {% if can_edit %}
+                {% if milestone.state == 'OPEN' %}
+                <a href="{% url 'milestone_issues' milestone.id 'OPEN' %}">
+                    <button class="btn btn-info">Issues</button>
+                </a>
+                <a href="{% url 'edit_milestone' milestone.id %}">
+                    <button class="btn btn-warning">Edit</button>
+                </a>
+                <a href="{% url 'toggle_milestone' milestone.id %}">
+                    <button class="btn btn-danger">Close</button>
+                </a>
+                {% else %}
+                <a href="{% url 'toggle_milestone' milestone.id %}">
+                    <button class="btn btn-info">Reopen</button>
+                </a>
+                {% endif %}
+            {% else %}
+                {% if milestone.state == 'OPEN' %}
+                <a href="{% url 'milestone_issues' milestone.id 'OPEN' %}">
+                    <button class="btn btn-info">Issues</button>
+                </a>
+                <a href="{% url 'edit_milestone' milestone.id %}">
+                    <button class="btn btn-info">View</button>
+                </a>
+                {% endif %}
             {% endif %}
         </li>
     {% endfor %}
     </ul>
 
+    {% if can_edit %}
     <br>
     <a href="{% url 'add_milestone' project_id %}">
         <button class="btn btn-success">Add milestone</button>
     </a>
+    {% endif %}
 
 {% endblock %}

@@ -21,13 +21,24 @@
           </li>
           {% if request.user.is_authenticated %}
           <li class="list-group-item">
+            <a href="{% url 'search_app' %}">
+                Search application
+            </a>
+          </li>
+          <li class="list-group-item">
             <a href="{% url 'git_logout' %}">Log Out</a>
           </li>
           <li class="list-group-item">
             <a href="{% url 'edit_profile' request.user.id %}">Edit profile</a>
           </li>
           <li class="list-group-item">
+            <a></a>
+          </li>
+          <li class="list-group-item">
             <a href="{% url 'delete_profile' request.user.id %}">Delete profile</a>
+          </li>
+          <li class="list-group-item">
+            <a></a>
           </li>
           <li class="list-group-item">
               <a href="{% url 'my_projects' %}">My projects</a>

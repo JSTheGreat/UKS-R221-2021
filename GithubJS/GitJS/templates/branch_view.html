@@ -1,5 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
+    <a href="{% url 'single_project' branch.project.id %}">
+        <button class="btn btn-primary">Back</button>
+    </a>
+    <br><br>
+
+    {% if not branch.default %}
+    <a href="{% url 'set_default' branch.id %}">
+        <button class="btn btn-info">Set branch as default</button>
+    </a>
+    <br><br>
+    {% endif %}
+
     <h1>{{ branch.name }}</h1>
 
     <h6>
@@ -14,18 +26,26 @@
         {% for file in branch.file_set.all %}
         <li class="list-group-item">
             {{file.title}}
+            {% if can_edit %}
             <a href="{% url 'edit_file' file.id %}">
                 <button class="btn btn-warning">Edit</button>
             </a>
             <a href="{% url 'delete_file' file.id %}">
                 <button class="btn btn-danger">Delete</button>
             </a>
+            {% else %}
+            <a href="{% url 'edit_file' file.id %}">
+                <button class="btn btn-info">View</button>
+            </a>
+            {% endif %}
         </li>
         {% endfor %}
     </ul>
 
+    {% if can_edit %}
     <br>
     <a href="{% url 'add_file' branch.id %}">
         <button class="btn btn-success">Add file</button>
     </a>
+    {% endif %}
 {% endblock %}
