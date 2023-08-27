@@ -30,13 +30,15 @@ def get_milestone_issues(request, milestone_id, state):
 @permission_required('GitJS.can_edit', raise_exception=True)
 def add_issue(request, project_id):
     project = get_object_or_404(Project, id=project_id)
+    can_edit = project.can_edit(request.user.username)
     if request.method == 'GET':
         return render(request, 'issue_form.html', {'title': 'New issue', 'project_id': project_id,
                                                    'form_action': str(project_id) + '/add_issue',
                                                    'input_title': '', 'input_desc': '',
                                                    'input_assignee': '', 'input_milestone': '',
                                                    'milestones': project.get_milestones('OPEN'),
-                                                   'participants': project.get_all_participants()
+                                                   'participants': project.get_all_participants(),
+                                                   'can_edit': can_edit
                                                    })
     else:
         new_title = request.POST['new_title'].strip()
@@ -54,7 +56,8 @@ def add_issue(request, project_id):
                                                        'input_assignee': '', 'input_milestone': '',
                                                        'milestones': project.get_milestones('OPEN'),
                                                        'participants': project.get_all_participants(),
-                                                       'project_id': project_id
+                                                       'project_id': project_id,
+                                                       'can_edit': can_edit
                                                        })
         existing_issues = Issue.objects.filter(title=new_title)
         if len(existing_issues) != 0:
@@ -65,7 +68,8 @@ def add_issue(request, project_id):
                                                        'input_assignee': '', 'input_milestone': '',
                                                        'milestones': project.get_milestones('OPEN'),
                                                        'participants': project.get_all_participants(),
-                                                       'project_id': project_id
+                                                       'project_id': project_id,
+                                                       'can_edit': can_edit
                                                        })
         new_id = Issue.objects.all().order_by('-id')[0].id + 1
         issue = Issue(id=new_id, title=new_title, description=new_desc, project=project, state='OPEN')
@@ -84,6 +88,7 @@ def edit_issue(request, issue_id):
     issue = get_object_or_404(Issue, id=issue_id)
     old_assignee = issue.assignee.username if issue.assignee else 'None'
     old_milestone = issue.milestone.title if issue.milestone else 'None'
+    can_edit = issue.project.can_edit(request.user.username)
     if request.method == 'GET':
         return render(request, 'issue_form.html', {'title': 'Issue #'+str(issue_id), 'project_id': issue.project.id,
                                                    'form_action': 'edit_issue/' + str(issue_id),
@@ -91,7 +96,8 @@ def edit_issue(request, issue_id):
                                                    'input_assignee': old_assignee,
                                                    'input_milestone': old_milestone,
                                                    'milestones': issue.project.get_milestones('OPEN'),
-                                                   'participants': issue.project.get_all_participants()
+                                                   'participants': issue.project.get_all_participants(),
+                                                   'can_edit': can_edit
                                                    })
     else:
         new_title = request.POST['new_title'].strip()
@@ -111,6 +117,7 @@ def edit_issue(request, issue_id):
                                                        'milestones': issue.project.get_milestones('OPEN'),
                                                        'participants': issue.project.get_all_participants(),
                                                        'error_message': error_message,
+                                                       'can_edit': can_edit
                                                        })
         existing_issues = Issue.objects.filter(title=new_title)
         if len(existing_issues) != 0 and existing_issues[0].id != issue_id:
@@ -123,6 +130,7 @@ def edit_issue(request, issue_id):
                                                        'milestones': issue.project.get_milestones('OPEN'),
                                                        'participants': issue.project.get_all_participants(),
                                                        'error_message': error_message,
+                                                       'can_edit': can_edit
                                                        })
         issue.project.update_users('Issue ' + issue.title + ' updated in ' + issue.project.title)
         issue.title = new_title

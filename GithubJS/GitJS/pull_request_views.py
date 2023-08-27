@@ -11,8 +11,9 @@ from .models import Project, PullRequest, Issue, Branch, Commit
 @permission_required('GitJS.can_view', raise_exception=True)
 def view_pull_requests(request, project_id, state):
     project = get_object_or_404(Project, id=project_id)
+    can_edit = project.can_edit(request.user.username)
     return render(request, 'pull_requests.html', {'title': 'Pull requests for ' + project.title,
-                                                  'project_id': project_id,
+                                                  'project_id': project_id, 'can_edit': can_edit,
                                                   'pull_requests': project.get_pull_requests(state)})
 
 
@@ -20,6 +21,7 @@ def view_pull_requests(request, project_id, state):
 @permission_required('GitJS.can_edit', raise_exception=True)
 def add_pull_request(request, project_id):
     project = get_object_or_404(Project, id=project_id)
+    can_edit = project.can_edit(request.user.username)
     if len(Branch.objects.filter(project=project, default=True)) > 0:
         default_branch_name = Branch.objects.filter(project=project, default=True)[0].name
     else:
@@ -90,6 +92,7 @@ def add_pull_request(request, project_id):
 def edit_pull_request(request, pr_id):
     pull_request = get_object_or_404(PullRequest, id=pr_id)
     issue_title = pull_request.issue.title if pull_request.issue is not None else 'None'
+    can_edit = pull_request.project.can_edit(request.user.username)
     if request.method == 'GET':
         return render(request, "pr_form.html", {"title": "Pull request #"+str(pr_id),
                                                 'project_id': pull_request.project.id,

@@ -83,9 +83,10 @@ def search_app(request):
         projects = Project.objects.filter(title__icontains=search_value) if include_projects else None
         branches = Branch.objects.filter(name__icontains=search_value) if include_branches else None
         files = File.objects.filter(title__icontains=search_value) if include_files else None
-        issues = Issue.objects.filter(title__icontains=search_value) if include_issues else None
-        milestones = Milestone.objects.filter(title__icontains=search_value) if include_milestones else None
-        pull_requests = PullRequest.objects.filter(title__icontains=search_value) if \
+        issues = Issue.objects.filter(title__icontains=search_value, state='OPEN') if include_issues else None
+        milestones = Milestone.objects.filter(title__icontains=search_value, state='OPEN') \
+            if include_milestones else None
+        pull_requests = PullRequest.objects.filter(title__icontains=search_value, state='OPEN') if \
             include_pull_requests else None
 
         return render(request, 'search.html', {'projects': projects, 'branches': branches, 'files': files,

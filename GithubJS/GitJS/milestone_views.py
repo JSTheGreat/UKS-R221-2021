@@ -13,17 +13,21 @@ from .models import Project, Branch, GitUser, StarredProject, WatchedProject, Mi
 @permission_required('GitJS.can_view', raise_exception=True)
 def get_milestones(request, project_id, state):
     project = get_object_or_404(Project, id=project_id)
+    can_edit = project.can_edit(request.user.username)
     return render(request, 'milestones.html', {'title': 'Milestones for ' + project.title, 'project_id': project_id,
-                                               'milestones': project.get_milestones(state)})
+                                               'milestones': project.get_milestones(state),
+                                               'can_edit': can_edit})
 
 
 @login_required(login_url='login/')
 @permission_required('GitJS.can_edit', raise_exception=True)
 def add_milestone(request, project_id):
     project = get_object_or_404(Project, id=project_id)
+    can_edit = project.can_edit(request.user.username)
     if request.method == 'GET':
         return render(request, 'milestone_form.html', {'title': 'New milestone', 'project_id': project_id,
                                                        'form_action': str(project_id)+'/add_milestone',
+                                                       'can_edit': can_edit,
                                                        'input_title': '', 'input_desc': '', 'due_date': timezone.now()
                                                        })
     else:
@@ -45,6 +49,7 @@ def add_milestone(request, project_id):
                                                            'input_title': '', 'input_desc': '',
                                                            'due_date': timezone.now(),
                                                            'error_message': error_message,
+                                                           'can_edit': can_edit
                                                            })
 
         try:
@@ -55,6 +60,7 @@ def add_milestone(request, project_id):
                                                            'input_title': '', 'input_desc': '',
                                                            'due_date': timezone.now(),
                                                            'error_message': error_message,
+                                                           'can_edit': can_edit
                                                            })
         except:
             new_id = len(Milestone.objects.all())
@@ -72,6 +78,7 @@ def add_milestone(request, project_id):
 def edit_milestone(request, milestone_id):
     milestone = get_object_or_404(Milestone, id=milestone_id)
     date_val = milestone.due_date.isoformat().split("T")[0]
+    can_edit = milestone.project.can_edit(request.user.username)
     if request.method == 'GET':
         return render(request, 'milestone_form.html', {'title': 'Milestone #'+str(milestone_id),
                                                        'project_id': milestone.project.id,
@@ -79,7 +86,8 @@ def edit_milestone(request, milestone_id):
                                                        'form_action': 'edit_milestone/'+str(milestone_id),
                                                        'input_title': milestone.title,
                                                        'input_desc': milestone.description,
-                                                       'due_date': date_val
+                                                       'due_date': date_val,
+                                                       'can_edit': can_edit
                                                        })
     else:
         new_title = request.POST['new_title'].strip()
@@ -103,6 +111,7 @@ def edit_milestone(request, milestone_id):
                                                            'input_desc': milestone.description,
                                                            'due_date': date_val,
                                                            'error_message': error_message,
+                                                           'can_edit': can_edit
                                                            })
 
         existing = Milestone.objects.filter(title=new_title, project=milestone.project)
@@ -117,6 +126,7 @@ def edit_milestone(request, milestone_id):
                                                                'input_desc': milestone.description,
                                                                'due_date': date_val,
                                                                'error_message': error_message,
+                                                               'can_edit': can_edit
                                                                })
 
         milestone.project.update_users('Milestone ' + milestone.title + ' changed')
