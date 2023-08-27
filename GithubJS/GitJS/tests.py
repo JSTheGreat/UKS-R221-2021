@@ -367,20 +367,18 @@ class InitialTests(TestCase):
         response = self.client.post(reverse('edit_milestone', args=(3,)), context, follow=True)
         self.assertEqual('Milestone with given title already exists', response.context['error_message'])
 
-    def test_delete_milestone_succeful(self):
+    def test_toggle_milestone(self):
         context = {'uname': 'user1', 'psw': 'user1'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
-        size_before = len(Milestone.objects.all())
-        self.client.post(reverse('delete_milestone', args=(1,)), context, follow=True)
-        self.assertTrue(size_before > len(Milestone.objects.all()))
+        # closing
+        self.assertEqual(Milestone.objects.get(id=1).state, 'OPEN')
+        self.client.post(reverse('toggle_milestone', args=(1,)), context, follow=True)
+        self.assertEqual(Milestone.objects.get(id=1).state, 'CLOSED')
 
-    def test_delete_milestone_unsuccessful(self):
-        context = {'uname': 'user2', 'psw': 'user2'}
-        self.client.post('http://localhost:8000/login/', context, follow=True)
-
-        response = self.client.post(reverse('delete_milestone', args=(1,)), context, follow=True)
-        self.assertEqual(response.status_code, 403)
+        # reopening
+        self.client.post(reverse('toggle_milestone', args=(1,)), context, follow=True)
+        self.assertEqual(Milestone.objects.get(id=1).state, 'OPEN')
 
     def test_get_contributors(self):
         project1 = Project.objects.get(id=1)

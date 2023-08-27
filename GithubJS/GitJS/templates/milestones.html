@@ -28,8 +28,12 @@
                 <a href="{% url 'edit_milestone' milestone.id %}">
                     <button class="btn btn-warning">Edit</button>
                 </a>
-                <a href="{% url 'delete_milestone' milestone.id %}">
-                    <button class="btn btn-danger">Delete</button>
+                <a href="{% url 'toggle_milestone' milestone.id %}">
+                    <button class="btn btn-danger">Close</button>
+                </a>
+                {% else %}
+                <a href="{% url 'toggle_milestone' milestone.id %}">
+                    <button class="btn btn-info">Reopen</button>
                 </a>
                 {% endif %}
             {% else %}
