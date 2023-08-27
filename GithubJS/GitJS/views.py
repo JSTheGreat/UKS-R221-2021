@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 
-from .models import Project, Branch, GitUser
+from .models import GitUser
 
 from django.conf import settings
 from django.core.cache.backends.base import DEFAULT_TIMEOUT

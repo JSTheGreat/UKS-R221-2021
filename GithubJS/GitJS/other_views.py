@@ -1,10 +1,10 @@
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 
-from .models import Project, Comment, GitUser, Reaction, PullRequest, Issue, Branch, Commit,\
+from .models import Project, Comment, GitUser, Reaction, PullRequest, Issue, Branch,\
     File, Milestone, StarredProject, WatchedProject
 
 

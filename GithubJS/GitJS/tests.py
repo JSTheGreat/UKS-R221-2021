@@ -16,6 +16,7 @@ class InitialTests(TestCase):
         # instantiate client for each test
         self.client = Client()
 
+    # method only used in initial testing
     def test_branch_count(self):
         p1 = Project.objects.get(id=1)
         self.assertIs(p1.get_branch_number(), 3)
@@ -94,10 +95,12 @@ class InitialTests(TestCase):
 
         self.client.logout()
 
+        # logging in with old username
         context = {'uname': 'user1', 'psw': 'user1'}
         response = self.client.post('http://localhost:8000/login/', context, follow=True)
         self.assertTrue(response.context['login_has_error'])
 
+        # logging in with new username
         context = {'uname': 'user1-new', 'psw': 'user1'}
         response = self.client.post('http://localhost:8000/login/', context, follow=True)
         self.assertRedirects(response, '/')
@@ -236,14 +239,18 @@ class InitialTests(TestCase):
         new_project = Project.objects.get(id=Project.objects.all().order_by('-id')[0].id)
 
         self.assertIsNone(forked.forked_from)
+        # link will be rendered if not none
         self.assertIsNotNone(new_project.forked_from)
         self.assertEqual(forked.title, new_project.title)
 
+        # testing if all branches copied
         for i in range(0, len(forked.get_branches())):
             self.assertEqual(forked.get_branches()[i].name, new_project.get_branches()[i].name)
+            # testing if all files copied
             for j in range(0, len(forked.get_branches()[i].get_files())):
                 self.assertEqual(forked.get_branches()[i].get_files()[j].title,
                                  new_project.get_branches()[i].get_files()[j].title)
+            # testing if all commits copied
             for j in range(0, len(forked.get_branches()[i].get_commits())):
                 self.assertEqual(forked.get_branches()[i].get_commits()[j].log_message,
                                  new_project.get_branches()[i].get_commits()[j].log_message)
@@ -261,10 +268,12 @@ class InitialTests(TestCase):
         context = {'uname': 'user1', 'psw': 'user1'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
 
+        # testing with empty branch name
         context = {'new_branch': '  '}
         response = self.client.post(reverse('edit_branch', args=(1,)), context, follow=True)
         self.assertEqual(response.context['error_message'], 'Branch name can\'t be empty')
 
+        # testing with already existing branch
         context = {'new_branch': 'Branch 2'}
         response = self.client.post(reverse('edit_branch', args=(1,)), context, follow=True)
         self.assertEqual(response.context['error_message'], 'Branch name already exists')
@@ -276,6 +285,8 @@ class InitialTests(TestCase):
         branch_size_before = len(Branch.objects.all())
         self.client.post(reverse('delete_branch', args=(1,)), context, follow=True)
         self.assertTrue(branch_size_before > len(Branch.objects.all()))
+
+        # testing if other contributors can delete as well
 
         context = {'uname': 'user4', 'psw': 'user4'}
         self.client.post('http://localhost:8000/login/', context, follow=True)
@@ -783,6 +794,7 @@ class InitialTests(TestCase):
         self.assertEqual(branch.get_file_by_title('File 2').title, 'File 2')
         self.assertIsNone(branch.get_file_by_title('File 3'))
 
+        # in the case of several branches having a file with the same name
         branch = Branch.objects.get(id=2)
         self.assertEqual(branch.get_file_by_title('File 1').title, 'File 1')
         self.assertEqual(branch.get_file_by_title('File 1').text, 'Generic text for file 1 on branch 2')
@@ -1029,6 +1041,7 @@ class InitialTests(TestCase):
         file_list_after = new_branch.get_files()
         commit_list_after = new_branch.get_commits()
 
+        # testing if all files and commits were copied as well
         self.assertTrue(len(Branch.objects.all()), branch_size_before)
         for i in range(0, len(file_list_before)):
             self.assertEqual(file_list_before[i].title, file_list_after[i].title)
@@ -1045,6 +1058,8 @@ class InitialTests(TestCase):
         context = {'new_branch': '  '}
         response = self.client.post(reverse('copy_branch', args=(3,)), context, follow=True)
         self.assertEqual(response.context['error_message'], "Branch name can't be empty")
+
+        # branch name has to be unique and can't even be the same as the branch being copied
 
         context = {'new_branch': 'Branch 1'}
         response = self.client.post(reverse('copy_branch', args=(3,)), context, follow=True)
