@@ -141,9 +141,13 @@ def edit_milestone(request, milestone_id):
 
 @login_required(login_url='login/')
 @permission_required('GitJS.can_edit', raise_exception=True)
-def delete_milestone(request, milestone_id):
+def toggle_milestone_status(request, milestone_id):
     milestone = get_object_or_404(Milestone, id=milestone_id)
-    if request.user.username != milestone.project.lead.username:
-        raise Http404()
-    milestone.delete()
-    return redirect('index')
+    if milestone.state == 'OPEN':
+        milestone.state = 'CLOSED'
+        milestone.project.update_users('Milestone ' + milestone.title + ' closed in ' + milestone.project.title)
+    else:
+        milestone.state = 'OPEN'
+        milestone.project.update_users('Milestone ' + milestone.title + ' opened in ' + milestone.project.title)
+    milestone.save()
+    return HttpResponseRedirect(reverse("milestones", args=(milestone.project.id, 'OPEN',)))
