@@ -8,6 +8,16 @@
     {% endif %}
 
     <h1>{{ project.title }}</h1>
+
+    {% if project.forked_from %}
+    <br>
+    <p>Forked from:
+        <a href="{% url 'single_project' project.forked_from.id %}">
+            {{project.forked_from.lead.username}}/{{project.forked_from.title}}
+        </a>
+    </p>
+    {% endif %}
+
     <div>
         {% if starred %}
         <a href="{% url 'remove_starred' project.id %}">
