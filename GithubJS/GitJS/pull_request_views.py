@@ -28,7 +28,7 @@ def add_pull_request(request, project_id):
         default_branch_name = ''
     if request.method == 'GET':
         return render(request, "pr_form.html", {"title": "New pull request", "input_title": "",
-                                                'project_id': project.id,
+                                                'project_id': project.id, 'can_edit': can_edit,
                                                 "input_desc": "", "source_branch": "",
                                                 "target_branch": default_branch_name,
                                                 'input_issue': '',
@@ -54,7 +54,7 @@ def add_pull_request(request, project_id):
 
         if error_message:
             return render(request, "pr_form.html", {"error_message": error_message, 'input_issue': '',
-                                                    'project_id': project.id,
+                                                    'project_id': project.id, 'can_edit': can_edit,
                                                     "title": "New pull request", 'input_title': '',
                                                     "input_desc": "", "source_branch": "",
                                                     "target_branch": default_branch_name,
@@ -66,7 +66,7 @@ def add_pull_request(request, project_id):
         if len(existing_pr) > 0:
             error_message = 'Pull request with given title already exists'
             return render(request, "pr_form.html", {"error_message": error_message, 'input_issue': '',
-                                                    'project_id': project.id,
+                                                    'project_id': project.id, 'can_edit': can_edit,
                                                     "title": "New pull request", "input_title": "",
                                                     "input_desc": "", "source_branch": "",
                                                     "target_branch": default_branch_name,
@@ -95,6 +95,7 @@ def edit_pull_request(request, pr_id):
     can_edit = pull_request.project.can_edit(request.user.username)
     if request.method == 'GET':
         return render(request, "pr_form.html", {"title": "Pull request #"+str(pr_id),
+                                                'can_edit': can_edit,
                                                 'project_id': pull_request.project.id,
                                                 "input_title": pull_request.title,
                                                 "input_desc": pull_request.description,
@@ -124,6 +125,7 @@ def edit_pull_request(request, pr_id):
         if error_message:
             return render(request, "pr_form.html", {"error_message": error_message,
                                                     "title": "Pull request #" + str(pr_id),
+                                                    'can_edit': can_edit,
                                                     'project_id': pull_request.project.id,
                                                     "input_title": pull_request.title,
                                                     "input_desc": pull_request.description,
@@ -138,6 +140,7 @@ def edit_pull_request(request, pr_id):
             if existing_pr[0].id != pr_id:
                 error_message = 'Pull request with given title already exists'
                 return render(request, "pr_form.html", {"error_message": error_message,
+                                                        'can_edit': can_edit,
                                                         "title": "Pull request #" + str(pr_id),
                                                         'project_id': pull_request.project.id,
                                                         "input_title": pull_request.title,
