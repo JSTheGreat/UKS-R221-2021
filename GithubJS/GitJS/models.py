@@ -43,6 +43,7 @@ class GitUser(User):
 
 class Project(models.Model):
     title = models.CharField(max_length=100)
+    forked_from = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)
     lead = models.ForeignKey(GitUser, on_delete=models.CASCADE)
 
     def get_branch_number(self):

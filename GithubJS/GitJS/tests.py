@@ -232,6 +232,22 @@ class InitialTests(TestCase):
         response = self.client.get('http://localhost:8000/my_projects', follow=True)
         self.assertTrue(len(response.context['projects']) > size_before)
 
+        forked = Project.objects.get(id=2)
+        new_project = Project.objects.get(id=Project.objects.all().order_by('-id')[0].id)
+
+        self.assertIsNone(forked.forked_from)
+        self.assertIsNotNone(new_project.forked_from)
+        self.assertEqual(forked.title, new_project.title)
+
+        for i in range(0, len(forked.get_branches())):
+            self.assertEqual(forked.get_branches()[i].name, new_project.get_branches()[i].name)
+            for j in range(0, len(forked.get_branches()[i].get_files())):
+                self.assertEqual(forked.get_branches()[i].get_files()[j].title,
+                                 new_project.get_branches()[i].get_files()[j].title)
+            for j in range(0, len(forked.get_branches()[i].get_commits())):
+                self.assertEqual(forked.get_branches()[i].get_commits()[j].log_message,
+                                 new_project.get_branches()[i].get_commits()[j].log_message)
+
     def test_edit_branch_successful(self):
         context = {'uname': 'user1', 'psw': 'user1'}
         self.client.post('http://localhost:8000/login/', context, follow=True)

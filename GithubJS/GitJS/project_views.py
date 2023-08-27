@@ -3,7 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.urls import reverse
 
-from .models import Project, Branch, GitUser, StarredProject, WatchedProject, Contributor
+from .models import Project, Branch, GitUser, StarredProject, WatchedProject, \
+    Contributor, File, Commit
 
 
 @login_required(login_url='login/')
@@ -100,6 +101,7 @@ def fork_project(request, project_id):
     user = get_object_or_404(GitUser, id=request.user.pk)
     for_fork = get_object_or_404(Project, id=project_id)
     new_project = Project(id=Project.objects.all().order_by('-id')[0].id + 1, lead=user)
+    new_project.forked_from = for_fork
     needs_new_title = True
     new_title = '' + for_fork.title
     while needs_new_title:
@@ -110,10 +112,24 @@ def fork_project(request, project_id):
             new_project.title = new_title
             needs_new_title = False
     new_project.save()
+
     for branch in Branch.objects.filter(project=for_fork):
-        new_id = len(Branch.objects.all()) + 1
+
+        new_id = Branch.objects.all().order_by('-id')[0].id + 1
         branch_copy = Branch(id=new_id, name=branch.name, project=new_project, default=branch.default)
         branch_copy.save()
+
+        for file in branch.get_files():
+            new_file_id = File.objects.all().order_by('-id')[0].id + 1
+            new_file = File(id=new_file_id, title=file.title, text=file.text, branch=branch_copy)
+            new_file.save()
+
+        for commit in branch.get_commits():
+            new_commit_id = Commit.objects.all().order_by('-id')[0].id + 1
+            new_commit = Commit(id=new_commit_id, log_message=commit.log_message, branch=branch_copy,
+                                date_time=commit.date_time, committer=commit.committer)
+            new_commit.save()
+
     return redirect('index')
 
 
