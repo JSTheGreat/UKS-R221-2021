@@ -1,12 +1,12 @@
 import datetime
 
 from django.utils import timezone
-from django.http import HttpResponseRedirect, Http404
-from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.urls import reverse
 
-from .models import Project, Branch, GitUser, StarredProject, WatchedProject, Milestone
+from .models import Project, Milestone
 
 
 @login_required(login_url='login/')
