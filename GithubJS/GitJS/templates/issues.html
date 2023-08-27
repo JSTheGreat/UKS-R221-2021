@@ -50,6 +50,12 @@
                     <button class="btn btn-info">Reopen</button>
                 </a>
                 {% endif %}
+            {% else %}
+                {% if issue.state == 'OPEN' %}
+                <a href="{% url 'edit_issue' issue.id %}">
+                    <button class="btn btn-info">View</button>
+                </a>
+                {% endif %}
             {% endif %}
         </li>
     {% endfor %}

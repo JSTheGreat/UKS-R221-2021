@@ -1055,3 +1055,61 @@ class InitialTests(TestCase):
         context = {'new_branch': 'Branch 3'}
         response = self.client.post(reverse('copy_branch', args=(3,)), context, follow=True)
         self.assertEqual(response.context['error_message'], "Branch name already exists")
+
+    def test_search_app(self):
+        context = {'uname': 'user1', 'psw': 'user1'}
+        self.client.post('http://localhost:8000/login/', context, follow=True)
+
+        search_value = ' 1 '
+        context = {'search_value': search_value, 'include_projects': True, 'include_branches': True,
+                   'include_issues': True, 'include_files': True}
+        response = self.client.post(reverse('search_app'), context, follow=True)
+        self.assertIsNotNone(response.context['projects'])
+        for project in response.context['projects']:
+            self.assertTrue(search_value.strip() in project.title)
+        self.assertIsNotNone(response.context['branches'])
+        for branch in response.context['branches']:
+            self.assertTrue(search_value.strip() in branch.name)
+        self.assertIsNotNone(response.context['issues'])
+        for issue in response.context['issues']:
+            self.assertTrue(search_value.strip() in issue.title)
+        self.assertIsNotNone(response.context['files'])
+        for file in response.context['files']:
+            self.assertTrue(search_value.strip() in file.title)
+
+        search_value = '  ect  '
+        context = {'search_value': search_value, 'include_projects': True, 'include_branches': True,
+                   'include_issues': True, 'include_files': True}
+        response = self.client.post(reverse('search_app'), context, follow=True)
+        self.assertIsNotNone(response.context['projects'])
+        for project in response.context['projects']:
+            self.assertTrue(search_value.strip() in project.title)
+        self.assertTrue(len(response.context['branches']) == 0)
+        self.assertTrue(len(response.context['issues']) == 0)
+        self.assertTrue(len(response.context['files']) == 0)
+
+        search_value = ' Nonexistant '
+        context = {'search_value': search_value, 'include_projects': True, 'include_branches': True,
+                   'include_issues': True, 'include_files': True}
+        response = self.client.post(reverse('search_app'), context, follow=True)
+        self.assertTrue(len(response.context['projects']) == 0)
+        self.assertTrue(len(response.context['branches']) == 0)
+        self.assertTrue(len(response.context['issues']) == 0)
+        self.assertTrue(len(response.context['files']) == 0)
+
+        search_value = '  ect  '
+        context = {'search_value': search_value, 'include_branches': True,
+                   'include_issues': True, 'include_files': True}
+        response = self.client.post(reverse('search_app'), context, follow=True)
+        self.assertIsNone(response.context['projects'])
+        self.assertTrue(len(response.context['branches']) == 0)
+        self.assertTrue(len(response.context['issues']) == 0)
+        self.assertTrue(len(response.context['files']) == 0)
+
+        search_value = '1'
+        context = {'search_value': search_value}
+        response = self.client.post(reverse('search_app'), context, follow=True)
+        self.assertIsNone(response.context['projects'])
+        self.assertIsNone(response.context['branches'])
+        self.assertIsNone(response.context['issues'])
+        self.assertIsNone(response.context['files'])

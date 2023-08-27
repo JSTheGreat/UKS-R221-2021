@@ -13,14 +13,15 @@
     <fieldset>
         {% if error_message %}<p class="error"><strong>{{ error_message }}</strong></p>{% endif %}
         <label for="new_title">Title</label><br>
-        <input type="text" name="new_title" id="new_title" value="{{input_title}}" class="form-control" required>
+        <input type="text" name="new_title" id="new_title" value="{{input_title}}" class="form-control" required
+            {% if not can_edit %} disabled {% endif %}>
 
         <label for="new_desc">Description</label><br>
         <textarea class="form-control" type="text" name="new_desc" id="new_desc"
-                  rows="3">{{input_desc}}</textarea>
+                  rows="3" {% if not can_edit %} disabled {% endif %}>{{input_desc}}</textarea>
 
         <label for="new_issue">Issue</label><br>
-        <select class="form-control" name="new_issue" id="new_issue">
+        <select class="form-control" name="new_issue" id="new_issue" {% if not can_edit %} disabled {% endif %}>
             <option>None</option>
             {% for issue in issues %}
                 {% if input_issue == issue.title %}
@@ -32,7 +33,7 @@
         </select>
 
         <label for="source_branch">Source</label><br>
-        <select class="form-control" name="source_branch" id="source_branch">
+        <select class="form-control" name="source_branch" id="source_branch" {% if not can_edit %} disabled {% endif %}>
             <option></option>
             {% for branch in branches %}
                 {% if branch.name == source_branch %}
@@ -44,7 +45,7 @@
         </select>
 
         <label for="target_branch">Target</label><br>
-        <select class="form-control" name="target_branch" id="target_branch">
+        <select class="form-control" name="target_branch" id="target_branch" {% if not can_edit %} disabled {% endif %}>
             <option></option>
             {% for branch in branches %}
                 {% if branch.name == target_branch %}
@@ -56,11 +57,13 @@
         </select>
     </fieldset>
 
+    {% if can_edit %}
         <br>
-    {% if input_title == '' %}
-        <input type="submit" value="Add" class="btn btn-success">
-    {% else %}
-        <input type="submit" value="Change" class="btn btn-warning">
+        {% if input_title == '' %}
+            <input type="submit" value="Add" class="btn btn-success">
+        {% else %}
+            <input type="submit" value="Change" class="btn btn-warning">
+        {% endif %}
     {% endif %}
     </form>
 {% endblock %}
